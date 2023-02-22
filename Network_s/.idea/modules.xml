@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/Networks/Lab1/Lab1.iml" filepath="$PROJECT_DIR$/Networks/Lab1/Lab1.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Networks/Labidk/Labidk.iml" filepath="$PROJECT_DIR$/Networks/Labidk/Labidk.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/Network_s.iml" filepath="$PROJECT_DIR$/.idea/Network_s.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Networks/Networks.iml" filepath="$PROJECT_DIR$/Networks/Networks.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Networks/VOIP/VOIP.iml" filepath="$PROJECT_DIR$/Networks/VOIP/VOIP.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Networks/VOIP/lib/lib.iml" filepath="$PROJECT_DIR$/Networks/VOIP/lib/lib.iml" />
+    </modules>
+  </component>
+</project>
