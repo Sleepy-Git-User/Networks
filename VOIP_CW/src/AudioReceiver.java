@@ -6,20 +6,25 @@
  *
  * @author  abj
  */
-
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-
+import java.net.*;
+import java.io.*;
 import CMPC3M06.AudioPlayer;
+import CMPC3M06.AudioRecorder;
 
 import javax.sound.sampled.LineUnavailableException;
 
-public class VoiceReceiver {
+public class AudioReceiver {
 
     static DatagramSocket receiving_socket;
+    static AudioPlayer ap;
+
+    static {
+        try {
+            ap = new AudioPlayer();
+        } catch (LineUnavailableException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public static void main (String[] args){
 
@@ -52,23 +57,25 @@ public class VoiceReceiver {
                 //Receive a DatagramPacket (note that the string cant be more than 80 chars)
                 byte[] buffer = new byte[512];
                 DatagramPacket packet = new DatagramPacket(buffer, 0, 512);
-                AudioPlayer player = new AudioPlayer();
 
-                receiving_socket.setSoTimeout(500);
                 receiving_socket.receive(packet);
 
+                //Play audio
+                ap.playBlock(buffer);
 
-                player.playBlock(buffer);
+                //Get a string from the byte buffer
+                //String str = new String(buffer);
+                //Display it
+                //System.out.print(str + "\n");
 
-            } catch(SocketTimeoutException e){
-                System.out.println(".");
+                //The user can type EXIT to quit
+                /*if (str.substring(0,4).equals("EXIT")){
+                    running=false;
+                }*/
             } catch (IOException e){
                 System.out.println("ERROR: TextReceiver: Some random IO error occured!");
                 e.printStackTrace();
-            } catch (LineUnavailableException e) {
-                throw new RuntimeException(e);
             }
-
         }
         //Close the socket
         receiving_socket.close();

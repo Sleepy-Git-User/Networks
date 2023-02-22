@@ -6,20 +6,25 @@
  *
  * @author  abj
  */
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.*;
-
-
+import java.io.*;
+import CMPC3M06.AudioPlayer;
 import CMPC3M06.AudioRecorder;
 
 import javax.sound.sampled.LineUnavailableException;
 
-public class VoiceSender {
+public class AudioSender {
 
     static DatagramSocket sending_socket;
+    static AudioRecorder ar;
+
+    static {
+        try {
+            ar = new AudioRecorder();
+        } catch (LineUnavailableException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public static void main (String[] args){
 
@@ -55,7 +60,7 @@ public class VoiceSender {
         //***************************************************
         //Get a handle to the Standard Input (console) so we can read user input
 
-        //BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
         //***************************************************
 
         //***************************************************
@@ -65,37 +70,29 @@ public class VoiceSender {
 
         while (running){
             try{
-                //Vector used to store audio blocks (32ms/512bytes each)
-                //Vector<byte[]> voiceVector = new Vector<byte[]>();
 
-                //Initialise AudioPlayer and AudioRecorder objects
-                AudioRecorder recorder = new AudioRecorder();
+                byte[] audio = ar.getBlock();
 
-                //Recording time in seconds
-                int recordTime = 10;
+                //Read in a string from the standard input
+                //String str = in.readLine();
 
-                //Capture audio data and add to voiceVector
-                System.out.println("Recording Audio...");
+                //Convert it to an array of bytes
+                byte[] buffer = audio;
 
-                for (int i = 0; i < Math.ceil(recordTime / 0.032); i++) {
-                    byte[] block = recorder.getBlock();
-                    //Make a DatagramPacket from it, with client address and port number
+                //Make a DatagramPacket from it, with client address and port number
+                DatagramPacket packet = new DatagramPacket(buffer, buffer.length, clientIP, PORT);
 
-                    DatagramPacket packet = new DatagramPacket(block, block.length, clientIP, PORT);
+                //Send it
+                sending_socket.send(packet);
 
-                    //Send it
-                    sending_socket.send(packet);
-                }
-
-                //Close audio input
-                recorder.close();
-
+                //The user can type EXIT to quit
+                /*if (str.equals("EXIT")){
+                    running=false;
+                }*/
 
             } catch (IOException e){
                 System.out.println("ERROR: TextSender: Some random IO error occured!");
                 e.printStackTrace();
-            } catch (LineUnavailableException e) {
-                throw new RuntimeException(e);
             }
         }
         //Close the socket
@@ -103,4 +100,3 @@ public class VoiceSender {
         //***************************************************
     }
 }
-

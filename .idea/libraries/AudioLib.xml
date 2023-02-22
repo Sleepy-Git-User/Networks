@@ -1,7 +1,7 @@
 <component name="libraryTable">
   <library name="AudioLib">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/Lab1/lib/AudioLib.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/AudioLib.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
