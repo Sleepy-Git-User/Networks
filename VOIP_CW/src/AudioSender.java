@@ -13,7 +13,7 @@ import CMPC3M06.AudioRecorder;
 
 import javax.sound.sampled.LineUnavailableException;
 
-public class AudioSender {
+public class AudioSender implements Runnable{
 
     static DatagramSocket sending_socket;
     static AudioRecorder ar;
@@ -25,8 +25,11 @@ public class AudioSender {
             throw new RuntimeException(e);
         }
     }
-
-    public static void main (String[] args){
+    public void start(){
+        Thread thread = new Thread(this);
+        thread.start();
+    }
+    public void run (){
 
         //***************************************************
         //Port to send to

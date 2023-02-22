@@ -13,7 +13,7 @@ import CMPC3M06.AudioRecorder;
 
 import javax.sound.sampled.LineUnavailableException;
 
-public class AudioReceiver {
+public class AudioReceiver implements Runnable {
 
     static DatagramSocket receiving_socket;
     static AudioPlayer ap;
@@ -26,7 +26,11 @@ public class AudioReceiver {
         }
     }
 
-    public static void main (String[] args){
+    public void start(){
+        Thread thread = new Thread(this);
+        thread.start();
+    }
+    public void run (){
 
         //***************************************************
         //Port to open socket on
