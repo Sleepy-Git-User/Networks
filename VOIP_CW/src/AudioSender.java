@@ -75,6 +75,8 @@ public class AudioSender {
 
                 byte[] audio = ar.getBlock();
 
+                byte[] lower = sequenceNumbering.lowerBitRate(audio, audio.length);
+
                 //Read in a string from the standard input
                 //String str = in.readLine();
 
