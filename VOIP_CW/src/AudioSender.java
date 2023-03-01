@@ -8,6 +8,8 @@
  */
 import java.net.*;
 import java.io.*;
+import java.nio.ByteBuffer;
+
 import CMPC3M06.AudioPlayer;
 import CMPC3M06.AudioRecorder;
 import uk.ac.uea.cmp.voip.DatagramSocket2;
@@ -82,11 +84,12 @@ public class AudioSender implements Runnable{
 
                 byte[] audio = ar.getBlock();
 
-                //Read in a string from the standard input
-                //String str = in.readLine();
+                ByteBuffer bb = ByteBuffer.allocate(2+audio.length);
+                bb.putShort((short) 3);
+                bb.put(audio);
 
                 //Convert it to an array of bytes
-                byte[] buffer = audio;
+                byte[] buffer = bb.array();
 
                 //Make a DatagramPacket from it, with client address and port number
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length, clientIP, PORT);
