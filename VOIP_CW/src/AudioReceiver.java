@@ -64,19 +64,27 @@ public class AudioReceiver implements Runnable {
         while (running){
 
             try{
-                //Receive a DatagramPacket (note that the string cant be more than 80 chars)
+
+                //Created a buffer of 512 bytes for the incoming packets.
                 byte[] buffer = new byte[512];
+                //Created a byte array to store the audio minus the 2 bytes for the header.
                 byte[] audio = new byte[510];
+                //Was here before I was. Default lab jazz.
                 DatagramPacket packet = new DatagramPacket(buffer, 0, 512);
                 DatagramPacket[] send = new DatagramPacket[16];
 
                 receiving_socket.receive(packet);
 
+                //Creates a ByteBuffer Object and using the wrap method allocates it to the size of the buffer.
                 ByteBuffer bb = ByteBuffer.wrap(buffer);
 
+                //Short variable to store the header data. Removes it from the ByteArray.
                 short header = bb.getShort();
+                //Assignes the remaining Byte Array to audio. This is the audio data.
                 bb.get(audio);
+                //Playes the Audio
                 ap.playBlock(audio);
+                // Prints the header for each packet.
                 System.out.println(header);
 
             } catch (IOException e){

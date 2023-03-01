@@ -84,11 +84,14 @@ public class AudioSender implements Runnable{
 
                 byte[] audio = ar.getBlock();
 
+                //Creates a ByteBuffer object called bb. With 2 bytes for the header and the length of the audio allocated in size.
                 ByteBuffer bb = ByteBuffer.allocate(2+audio.length);
+                //Slapped a value of 3 in to the bb array. As a short.
                 bb.putShort((short) 3);
+                //Slapped the audio byte array in to bb after the header.
                 bb.put(audio);
 
-                //Convert it to an array of bytes
+                //Stores the bb.array in to buffer ready to be sent off.
                 byte[] buffer = bb.array();
 
                 //Make a DatagramPacket from it, with client address and port number
