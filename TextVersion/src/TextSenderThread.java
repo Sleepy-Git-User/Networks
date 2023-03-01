@@ -4,6 +4,7 @@
  */
 import java.net.*;
 import java.io.*;
+import java.util.Arrays;
 
 public class TextSenderThread implements Runnable{
 
@@ -55,14 +56,28 @@ public class TextSenderThread implements Runnable{
         //Main loop.
 
         boolean running = true;
-
+        int counter = 0;
         while (running){
+
             try{
+                counter++;
                 //Read in a string from the standard input
                 String str = in.readLine();
 
+                byte[] text = str.getBytes();
+                System.out.println(Arrays.toString(text));
+                byte[] header = new byte[4];
+                header[0] = (byte) (text.length >> 24);
+                header[1] = (byte) (text.length >> 16);
+                header[2] = (byte) (text.length >> 8);
+                header[3] = (byte) (text.length);
+                System.out.println("Header " +Arrays.toString(header));
+
                 //Convert it to an array of bytes
-                byte[] buffer = str.getBytes();
+                byte[] buffer = new byte[header.length+ text.length];
+                System.arraycopy(header, 0, buffer, 0, 4);
+                System.arraycopy(text, 0, buffer, 4, text.length);
+
 
                 //Make a DatagramPacket from it, with client address and port number
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length, clientIP, PORT);

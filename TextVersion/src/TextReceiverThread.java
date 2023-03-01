@@ -8,6 +8,7 @@
  */
 import java.net.*;
 import java.io.*;
+import java.util.Arrays;
 
 public class TextReceiverThread implements Runnable{
 
@@ -51,7 +52,7 @@ public class TextReceiverThread implements Runnable{
                 DatagramPacket packet = new DatagramPacket(buffer, 0, 80);
 
                 receiving_socket.receive(packet);
-
+                System.out.println("Buffer " + Arrays.toString(buffer));
                 //Get a string from the byte buffer
                 String str = new String(buffer);
                 //Display it
