@@ -10,6 +10,10 @@ import java.net.*;
 import java.io.*;
 import CMPC3M06.AudioPlayer;
 import CMPC3M06.AudioRecorder;
+import uk.ac.uea.cmp.voip.DatagramSocket2;
+import uk.ac.uea.cmp.voip.DatagramSocket3;
+import uk.ac.uea.cmp.voip.DatagramSocket4;
+
 
 import javax.sound.sampled.LineUnavailableException;
 
@@ -62,18 +66,19 @@ public class AudioReceiver implements Runnable {
                 byte[] buffer = new byte[512];
                 DatagramPacket packet = new DatagramPacket(buffer, 0, 512);
                 DatagramPacket[] send = new DatagramPacket[16];
-                int counter = 0;
-                while(counter < 16){
-                    receiving_socket.receive(packet);
-                    send[counter] = packet;
-                    counter++;
-                }
-
-                //Play audio
-                for (int i = 0; i < 16; i++) {
-                    ap.playBlock(send[i].getData());
-                }
-
+//                int counter = 0;
+//                while(counter < 16){
+//                    receiving_socket.receive(packet);
+//                    send[counter] = packet;
+//                    counter++;
+//                }
+//
+//                //Play audio
+//                for (int i = 0; i < 16; i++) {
+//                    ap.playBlock(send[i].getData());
+//                }
+                receiving_socket.receive(packet);
+                ap.playBlock(buffer);
                 //Get a string from the byte buffer
                 //String str = new String(buffer);
                 //Display it
