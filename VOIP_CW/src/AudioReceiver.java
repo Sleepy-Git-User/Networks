@@ -57,6 +57,7 @@ public class AudioReceiver {
                 //Receive a DatagramPacket (note that the string cant be more than 80 chars)
                 byte[] buffer = new byte[512];
                 DatagramPacket packet = new DatagramPacket(buffer, 0, 512);
+<<<<<<< Updated upstream
                 DatagramPacket[] send = new DatagramPacket[16];
                 int counter = 0;
                 while(counter < 16){
@@ -70,6 +71,11 @@ public class AudioReceiver {
                     ap.playBlock(send[i].getData());
                 }
 
+=======
+
+                receiving_socket.receive(packet);
+                ap.playBlock(buffer);
+>>>>>>> Stashed changes
                 //Get a string from the byte buffer
                 //String str = new String(buffer);
                 //Display it

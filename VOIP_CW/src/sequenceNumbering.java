@@ -1,5 +1,33 @@
-public class sequenceNumbering {
+import java.net.DatagramPacket;
 
+public class sequenceNumbering {
+    byte[] header = new byte[4];
+    byte[] buffer = new byte[512];
+    public static byte[] generateHeader(int pos){
+        byte[] header = new byte[4];
+        header[0] = (byte) (pos >> 24);
+        header[1] = (byte) (pos >> 16);
+        header[2] = (byte) (pos >> 8);
+        header[3] = (byte) (pos);
+        return header;
+    }
+    public static DatagramPacket[] rotateLeft(DatagramPacket[] grid) {
+        DatagramPacket[] left = new DatagramPacket[grid.length];
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                byte[] temp = new byte[516];
+                byte[] header = Integer.to
+                System.arraycopy(left[4 * i + j].getData(), 0, temp, 4, 512);
+                DatagramPacket temp = new DatagramPacket();
+                left[4 * (3 - j) + i] = grid[4 * i + j];
+            }
+        }
+        return left;
+    }
+
+
+
+<<<<<<< Updated upstream
     //Send in packets - Packet structure needs to have built in redundant stream
     //Store in 4x4 grid
     //Interleave packets
@@ -26,6 +54,19 @@ public class sequenceNumbering {
 
 
 
+=======
+
+    public static void main(String[] args) {
+        // TODO Need to figure out header for packet
+        /*
+        The buffer stores 512 bytes of audio
+        The header stores 4 bytes of sequence number
+
+
+
+
+         */
+>>>>>>> Stashed changes
     }
 
 
