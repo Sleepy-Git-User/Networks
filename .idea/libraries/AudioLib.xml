@@ -2,6 +2,7 @@
   <library name="AudioLib">
     <CLASSES>
       <root url="jar://$PROJECT_DIR$/lib/AudioLib.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/voip.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
