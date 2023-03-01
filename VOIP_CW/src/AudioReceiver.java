@@ -8,6 +8,8 @@
  */
 import java.net.*;
 import java.io.*;
+import java.util.Arrays;
+
 import CMPC3M06.AudioPlayer;
 import CMPC3M06.AudioRecorder;
 
@@ -56,12 +58,16 @@ public class AudioReceiver {
             try{
                 //Receive a DatagramPacket (note that the string cant be more than 80 chars)
                 byte[] buffer = new byte[512];
-                DatagramPacket packet = new DatagramPacket(buffer, 0, 512);
-<<<<<<< Updated upstream
+                DatagramPacket packet = new DatagramPacket(buffer, 0, 516);
                 DatagramPacket[] send = new DatagramPacket[16];
                 int counter = 0;
                 while(counter < 16){
                     receiving_socket.receive(packet);
+                    byte[] header = Arrays.copyOfRange(packet.getData(),0,4);
+                    byte[] data = Arrays.copyOfRange(packet.getData(),4,516);
+                    int seq = (header[0] << 8) | header[1];
+
+
                     send[counter] = packet;
                     counter++;
                 }
@@ -71,11 +77,10 @@ public class AudioReceiver {
                     ap.playBlock(send[i].getData());
                 }
 
-=======
+
 
                 receiving_socket.receive(packet);
                 ap.playBlock(buffer);
->>>>>>> Stashed changes
                 //Get a string from the byte buffer
                 //String str = new String(buffer);
                 //Display it

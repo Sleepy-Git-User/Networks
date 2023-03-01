@@ -75,7 +75,7 @@ public class AudioSender {
 
                 byte[] audio = ar.getBlock();
 
-                byte[] lower = sequenceNumbering.lowerBitRate(audio, audio.length);
+                //byte[] lower = sequenceNumbering.lowerBitRate(audio, audio.length);
 
                 //Read in a string from the standard input
                 //String str = in.readLine();
@@ -83,18 +83,15 @@ public class AudioSender {
                 //Convert it to an array of bytes
                 byte[] buffer = audio;
 
+                //Make header
+                buffer = sequenceNumbering.generatePayload(buffer, count);
                 //Make a DatagramPacket from it, with client address and port number
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length, clientIP, PORT);
 
                 matrix[count] = packet;
-                DatagramPacket[] sorted = new DatagramPacket[packet.getLength()];
                 count++;
                 if(count == 16){
-                    for (int i = 0; i < 4; i++) {
-                        for (int j = 0; j <4; j++) {
-                            sorted[4 * (3 - j) + i] = matrix[4 * i + j];
-                        }
-                    }
+                    DatagramPacket[] sorted = sequenceNumbering.rotateLeft(matrix);
                     for (int i = 0; i < 16; i++) {
                         sending_socket.send(sorted[i]);
                     }
