@@ -4,6 +4,7 @@
  */
 import java.net.*;
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 public class TextSenderThread implements Runnable{
@@ -66,18 +67,14 @@ public class TextSenderThread implements Runnable{
 
                 byte[] text = str.getBytes();
                 System.out.println(Arrays.toString(text));
-                byte[] header = new byte[4];
-                header[0] = (byte) (text.length >> 24);
-                header[1] = (byte) (text.length >> 16);
-                header[2] = (byte) (text.length >> 8);
-                header[3] = (byte) (text.length);
-                System.out.println("Header " +Arrays.toString(header));
-
-                //Convert it to an array of bytes
-                byte[] buffer = new byte[header.length+ text.length];
-                System.arraycopy(header, 0, buffer, 0, 4);
-                System.arraycopy(text, 0, buffer, 4, text.length);
-
+                // Creates a Bytebuffer and allocates the size to 2 bytes for the short header and then to the size of text.length
+                ByteBuffer bb = ByteBuffer.allocate(2+text.length);
+                // Slaps a short of 5 on to the bb object
+                bb.putShort((short) 5);
+                // Slaps the value of Text next.
+                bb.put(text);
+                // Assigns buffer to bb object
+                byte[] buffer = bb.array();
 
                 //Make a DatagramPacket from it, with client address and port number
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length, clientIP, PORT);

@@ -8,6 +8,7 @@
  */
 import java.net.*;
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 public class TextReceiverThread implements Runnable{
@@ -48,14 +49,21 @@ public class TextReceiverThread implements Runnable{
 
             try{
                 //Receive a DatagramPacket (note that the string cant be more than 80 chars)
-                byte[] buffer = new byte[80];
-                DatagramPacket packet = new DatagramPacket(buffer, 0, 80);
+                byte[] buffer = new byte[82];
+                byte[] text = new byte[80];
+                DatagramPacket packet = new DatagramPacket(buffer, 0, 82);
 
                 receiving_socket.receive(packet);
-                System.out.println("Buffer " + Arrays.toString(buffer));
+
+                // Creates a ByteBuffer object and allocates it to the size of buffer.
+                ByteBuffer bb = ByteBuffer.wrap(buffer);
+                // Grabs the short value from the front of the byte array
+                short header = bb.getShort();
+                bb.get(text);
                 //Get a string from the byte buffer
-                String str = new String(buffer);
+                String str = new String(text);
                 //Display it
+                System.out.println(header);
                 System.out.print(str);
 
                 //The user can type EXIT to quit
