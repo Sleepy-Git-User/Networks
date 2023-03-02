@@ -79,6 +79,7 @@ public class AudioSender implements Runnable{
         boolean running = true;
         DatagramPacket[] matrix = new DatagramPacket[16];
         int count = 0;
+        int sequenceNumber = 0;
         while (running){
             try{
 
@@ -87,7 +88,8 @@ public class AudioSender implements Runnable{
                 //Creates a ByteBuffer object called bb. With 2 bytes for the header and the length of the audio allocated in size.
                 ByteBuffer bb = ByteBuffer.allocate(2+audio.length);
                 //Slapped a value of 3 in to the bb array. As a short.
-                bb.putShort((short) 3);
+                bb.putShort((short) sequenceNumber);
+                sequenceNumber++;
                 //Slapped the audio byte array in to bb after the header.
                 bb.put(audio);
 
