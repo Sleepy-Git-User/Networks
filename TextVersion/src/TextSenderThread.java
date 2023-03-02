@@ -1,7 +1,3 @@
-/*
- * TextSender.java
- */
-
 /**
  *
  * @author  abj
@@ -9,33 +5,17 @@
 import java.net.*;
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
-import CMPC3M06.AudioPlayer;
-import CMPC3M06.AudioRecorder;
-import uk.ac.uea.cmp.voip.DatagramSocket2;
-import uk.ac.uea.cmp.voip.DatagramSocket3;
-import uk.ac.uea.cmp.voip.DatagramSocket4;
-
-
-import javax.sound.sampled.LineUnavailableException;
-import javax.xml.crypto.Data;
-
-public class AudioSender implements Runnable{
+public class TextSenderThread implements Runnable{
 
     static DatagramSocket sending_socket;
-    static AudioRecorder ar;
 
-    static {
-        try {
-            ar = new AudioRecorder();
-        } catch (LineUnavailableException e) {
-            throw new RuntimeException(e);
-        }
-    }
     public void start(){
         Thread thread = new Thread(this);
         thread.start();
     }
+
     public void run (){
 
         //***************************************************
@@ -44,9 +24,9 @@ public class AudioSender implements Runnable{
         //IP ADDRESS to send to
         InetAddress clientIP = null;
         try {
-            clientIP = InetAddress.getByName("localhost");
+            clientIP = InetAddress.getByName("localhost");  //CHANGE localhost to IP or NAME of client machine
         } catch (UnknownHostException e) {
-            System.out.println("ERROR: TextSender: Could not find client IP");
+            System.out.println("ERROR: Lab2UDP.TextSender: Could not find client IP");
             e.printStackTrace();
             System.exit(0);
         }
@@ -61,7 +41,7 @@ public class AudioSender implements Runnable{
         try{
             sending_socket = new DatagramSocket();
         } catch (SocketException e){
-            System.out.println("ERROR: TextSender: Could not open UDP socket to send from.");
+            System.out.println("ERROR: Lab2UDP.TextSender: Could not open UDP socket to send from.");
             e.printStackTrace();
             System.exit(0);
         }
@@ -77,60 +57,38 @@ public class AudioSender implements Runnable{
         //Main loop.
 
         boolean running = true;
-        DatagramPacket[] matrix = new DatagramPacket[16];
-        int count = 0;
+        int counter = 0;
         while (running){
+
             try{
-
-                byte[] audio = ar.getBlock();
-
-
-                //byte[] lower = sequenceNumbering.lowerBitRate(audio, audio.length);
-
+                counter++;
                 //Read in a string from the standard input
-                //String str = in.readLine();
+                String str = in.readLine();
 
-                //Creates a ByteBuffer object called bb. With 2 bytes for the header and the length of the audio allocated in size.
-                ByteBuffer bb = ByteBuffer.allocate(2+audio.length);
-                //Slapped a value of 3 in to the bb array. As a short.
-                bb.putShort((short) 3);
-                //Slapped the audio byte array in to bb after the header.
-                bb.put(audio);
-
-
-                //Stores the bb.array in to buffer ready to be sent off.
+                byte[] text = str.getBytes();
+                System.out.println(Arrays.toString(text));
+                // Creates a Bytebuffer and allocates the size to 2 bytes for the short header and then to the size of text.length
+                ByteBuffer bb = ByteBuffer.allocate(2+text.length);
+                // Slaps a short of 5 on to the bb object
+                bb.putShort((short) 5);
+                // Slaps the value of Text next.
+                bb.put(text);
+                // Assigns buffer to bb object
                 byte[] buffer = bb.array();
 
-                //Make header
-                buffer = sequenceNumbering.generatePayload(buffer, count);
                 //Make a DatagramPacket from it, with client address and port number
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length, clientIP, PORT);
-
-/*
-                matrix[count] = packet;
-                count++;
-                if(count == 16){
-                    DatagramPacket[] sorted = sequenceNumbering.rotateLeft(matrix);
-                    for (int i = 0; i < 16; i++) {
-                        sending_socket.send(sorted[i]);
-                    }
-                    count = 0;
-                }
-                */
-
-
 
                 //Send it
                 sending_socket.send(packet);
 
                 //The user can type EXIT to quit
-                /*
                 if (str.equals("EXIT")){
                     running=false;
-                }*/
+                }
 
             } catch (IOException e){
-                System.out.println("ERROR: TextSender: Some random IO error occured!");
+                System.out.println("ERROR: Lab2UDP.TextSender: Some random IO error occured!");
                 e.printStackTrace();
             }
         }

@@ -1,5 +1,5 @@
 /*
- * TextReceiver.java
+ * TextReceiverThread.java
  */
 
 /**
@@ -8,36 +8,18 @@
  */
 import java.net.*;
 import java.io.*;
-import java.util.Arrays;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
-
-import CMPC3M06.AudioPlayer;
-import CMPC3M06.AudioRecorder;
-import uk.ac.uea.cmp.voip.DatagramSocket2;
-import uk.ac.uea.cmp.voip.DatagramSocket3;
-import uk.ac.uea.cmp.voip.DatagramSocket4;
-
-
-import javax.sound.sampled.LineUnavailableException;
-
-public class AudioReceiver implements Runnable {
+public class TextReceiverThread implements Runnable{
 
     static DatagramSocket receiving_socket;
-    static AudioPlayer ap;
-
-    static {
-        try {
-            ap = new AudioPlayer();
-        } catch (LineUnavailableException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     public void start(){
         Thread thread = new Thread(this);
         thread.start();
     }
+
     public void run (){
 
         //***************************************************
@@ -67,39 +49,27 @@ public class AudioReceiver implements Runnable {
 
             try{
                 //Receive a DatagramPacket (note that the string cant be more than 80 chars)
-
-                byte[] buffer = new byte[514];
-                //Created a byte array to store the audio minus the 2 bytes for the header.
-                byte[] audio = new byte[512];
-                //Was here before I was. Default lab jazz.
-                DatagramPacket packet = new DatagramPacket(buffer, 0, 514);
-                DatagramPacket[] send = new DatagramPacket[16];
-
+                byte[] buffer = new byte[82];
+                byte[] text = new byte[80];
+                DatagramPacket packet = new DatagramPacket(buffer, 0, 82);
 
                 receiving_socket.receive(packet);
 
-
-
-                receiving_socket.receive(packet);
-                ap.playBlock(buffer);
-                //Get a string from the byte buffer
-                //String str = new String(buffer);
-                //Display it
-                //System.out.print(str + "\n");
-
-                //Creates a ByteBuffer Object and using the wrap method allocates it to the size of the buffer.
+                // Creates a ByteBuffer object and allocates it to the size of buffer.
                 ByteBuffer bb = ByteBuffer.wrap(buffer);
-
-                //Short variable to store the header data. Removes it from the ByteArray.
+                // Grabs the short value from the front of the byte array
                 short header = bb.getShort();
-                //Assignes the remaining Byte Array to audio. This is the audio data.
-                bb.get(audio);
-                //Playes the Audio
-                ap.playBlock(audio);
-                // Prints the header for each packet.
+                bb.get(text);
+                //Get a string from the byte buffer
+                String str = new String(text);
+                //Display it
                 System.out.println(header);
+                System.out.print(str);
 
-
+                //The user can type EXIT to quit
+                if (str.substring(0,4).equals("EXIT")){
+                    running=false;
+                }
             } catch (IOException e){
                 System.out.println("ERROR: TextReceiver: Some random IO error occured!");
                 e.printStackTrace();
