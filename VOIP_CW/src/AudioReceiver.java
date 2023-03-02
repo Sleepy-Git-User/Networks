@@ -9,6 +9,7 @@
 import java.net.*;
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import CMPC3M06.AudioPlayer;
 import CMPC3M06.AudioRecorder;
@@ -21,7 +22,7 @@ import javax.sound.sampled.LineUnavailableException;
 
 public class AudioReceiver implements Runnable {
 
-    static DatagramSocket receiving_socket;
+    static DatagramSocket4 receiving_socket;
     static AudioPlayer ap;
 
     static {
@@ -48,7 +49,7 @@ public class AudioReceiver implements Runnable {
 
         //DatagramSocket receiving_socket;
         try{
-            receiving_socket = new DatagramSocket(PORT);
+            receiving_socket = new DatagramSocket4(PORT);
         } catch (SocketException e){
             System.out.println("ERROR: TextReceiver: Could not open UDP socket to receive from.");
             e.printStackTrace();
@@ -60,6 +61,7 @@ public class AudioReceiver implements Runnable {
         //Main loop.
 
         boolean running = true;
+        short counter = 0;
 
         while (running){
 
@@ -74,18 +76,31 @@ public class AudioReceiver implements Runnable {
                 DatagramPacket[] send = new DatagramPacket[16];
 
                 receiving_socket.receive(packet);
+//                System.out.println(Arrays.toString(buffer));
+
+
 
                 //Creates a ByteBuffer Object and using the wrap method allocates it to the size of the buffer.
                 ByteBuffer bb = ByteBuffer.wrap(buffer);
 
+
                 //Short variable to store the header data. Removes it from the ByteArray.
                 short header = bb.getShort();
+                if(header != counter){
+                    System.out.println("Packet Loss!!!!!!!");
+                    counter = header;
+                }
+                counter++;
+
+
                 //Assignes the remaining Byte Array to audio. This is the audio data.
                 bb.get(audio);
                 //Playes the Audio
                 ap.playBlock(audio);
+
                 // Prints the header for each packet.
                 System.out.println(header);
+
 
             } catch (IOException e){
                 System.out.println("ERROR: TextReceiver: Some random IO error occured!");

@@ -9,6 +9,8 @@
 import java.net.*;
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.Random;
 
 import CMPC3M06.AudioPlayer;
 import CMPC3M06.AudioRecorder;
@@ -22,7 +24,7 @@ import javax.xml.crypto.Data;
 
 public class AudioSender implements Runnable{
 
-    static DatagramSocket sending_socket;
+    static DatagramSocket4 sending_socket;
     static AudioRecorder ar;
 
     static {
@@ -59,7 +61,7 @@ public class AudioSender implements Runnable{
 
         //DatagramSocket sending_socket;
         try{
-            sending_socket = new DatagramSocket();
+            sending_socket = new DatagramSocket4();
         } catch (SocketException e){
             System.out.println("ERROR: TextSender: Could not open UDP socket to send from.");
             e.printStackTrace();
@@ -76,17 +78,25 @@ public class AudioSender implements Runnable{
         //***************************************************
         //Main loop.
 
+
         boolean running = true;
         DatagramPacket[] matrix = new DatagramPacket[16];
         int count = 0;
         int sequenceNumber = 0;
-        while (running){
-            try{
+        while (running) {
 
-                byte[] audio = ar.getBlock();
+
+            try {
+
+                //byte[] audio = ar.getBlock();
+                // Generate random audio data for testing
+                Random random = new Random();
+                byte[] audio = new byte[510];
+                random.nextBytes(audio);
+
 
                 //Creates a ByteBuffer object called bb. With 2 bytes for the header and the length of the audio allocated in size.
-                ByteBuffer bb = ByteBuffer.allocate(2+audio.length);
+                ByteBuffer bb = ByteBuffer.allocate(2 + audio.length);
                 //Slapped a value of 3 in to the bb array. As a short.
                 bb.putShort((short) sequenceNumber);
                 sequenceNumber++;
@@ -125,13 +135,15 @@ public class AudioSender implements Runnable{
                     running=false;
                 }*/
 
-            } catch (IOException e){
+            } catch (IOException e) {
                 System.out.println("ERROR: TextSender: Some random IO error occured!");
                 e.printStackTrace();
             }
         }
-        //Close the socket
-        sending_socket.close();
+
+            //Close the socket
+            sending_socket.close();
+
         //***************************************************
     }
 }
