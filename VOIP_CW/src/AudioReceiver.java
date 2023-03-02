@@ -66,11 +66,11 @@ public class AudioReceiver implements Runnable {
             try{
 
                 //Created a buffer of 512 bytes for the incoming packets.
-                byte[] buffer = new byte[512];
+                byte[] buffer = new byte[514];
                 //Created a byte array to store the audio minus the 2 bytes for the header.
-                byte[] audio = new byte[510];
+                byte[] audio = new byte[512];
                 //Was here before I was. Default lab jazz.
-                DatagramPacket packet = new DatagramPacket(buffer, 0, 512);
+                DatagramPacket packet = new DatagramPacket(buffer, 0, 514);
                 DatagramPacket[] send = new DatagramPacket[16];
 
                 receiving_socket.receive(packet);
