@@ -88,11 +88,11 @@ public class AudioSender implements Runnable{
 
             try {
 
-                //byte[] audio = ar.getBlock();
+                byte[] audio = ar.getBlock();
                 // Generate random audio data for testing
-                Random random = new Random();
-                byte[] audio = new byte[510];
-                random.nextBytes(audio);
+                //Random random = new Random();
+                //byte[] audio = new byte[510];
+                //random.nextBytes(audio);
 
 
                 //Creates a ByteBuffer object called bb. With 2 bytes for the header and the length of the audio allocated in size.

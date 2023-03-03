@@ -9,12 +9,9 @@
 import java.net.*;
 import java.io.*;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 import CMPC3M06.AudioPlayer;
-import CMPC3M06.AudioRecorder;
 import uk.ac.uea.cmp.voip.DatagramSocket2;
-import uk.ac.uea.cmp.voip.DatagramSocket3;
 import uk.ac.uea.cmp.voip.DatagramSocket4;
 
 
@@ -62,6 +59,7 @@ public class AudioReceiver implements Runnable {
 
         boolean running = true;
         short counter = 0;
+        byte[] prevAudio = new byte[510];
 
         while (running){
 
@@ -74,7 +72,7 @@ public class AudioReceiver implements Runnable {
                 //Was here before I was. Default lab jazz.
                 DatagramPacket packet = new DatagramPacket(buffer, 0, 512);
                 DatagramPacket[] send = new DatagramPacket[16];
-
+                
                 receiving_socket.receive(packet);
 //                System.out.println(Arrays.toString(buffer));
 
@@ -87,7 +85,12 @@ public class AudioReceiver implements Runnable {
                 //Short variable to store the header data. Removes it from the ByteArray.
                 short header = bb.getShort();
                 if(header != counter){
-                    System.out.println("Packet Loss!!!!!!!");
+
+                    //System.out.println("Packet Loss!!!!!!!");
+
+                    System.arraycopy(audio, 0, prevAudio, 0, 510);
+                    ap.playBlock(prevAudio);
+
                     counter = header;
                 }
                 counter++;
@@ -101,7 +104,8 @@ public class AudioReceiver implements Runnable {
                 // Prints the header for each packet.
                 System.out.println(header);
 
-
+                prevAudio = audio;
+                
             } catch (IOException e){
                 System.out.println("ERROR: TextReceiver: Some random IO error occured!");
                 e.printStackTrace();
