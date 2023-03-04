@@ -79,49 +79,33 @@ public class AudioSender implements Runnable{
         boolean running = true;
         DatagramPacket[] matrix = new DatagramPacket[16];
         int count = 0;
+        sequenceLayer sl = new sequenceLayer();
         while (running){
             try{
 
                 byte[] audio = ar.getBlock();
-
-
-                //byte[] lower = sequenceNumbering.lowerBitRate(audio, audio.length);
-
-                //Read in a string from the standard input
-                //String str = in.readLine();
-
-                //Creates a ByteBuffer object called bb. With 2 bytes for the header and the length of the audio allocated in size.
-                ByteBuffer bb = ByteBuffer.allocate(2+audio.length);
-                //Slapped a value of 3 in to the bb array. As a short.
-                bb.putShort((short) 3);
-                //Slapped the audio byte array in to bb after the header.
-                bb.put(audio);
-
+                byte[] buffer = sl.add(count, audio);
 
                 //Stores the bb.array in to buffer ready to be sent off.
-                byte[] buffer = bb.array();
 
-                //Make header
-                buffer = sequenceNumbering.generatePayload(buffer, count);
                 //Make a DatagramPacket from it, with client address and port number
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length, clientIP, PORT);
 
-/*
+
                 matrix[count] = packet;
                 count++;
                 if(count == 16){
-                    DatagramPacket[] sorted = sequenceNumbering.rotateLeft(matrix);
+                    DatagramPacket[] sorted = sl.rotateLeft(matrix);
                     for (int i = 0; i < 16; i++) {
                         sending_socket.send(sorted[i]);
                     }
                     count = 0;
                 }
-                */
+
 
 
 
                 //Send it
-                sending_socket.send(packet);
 
                 //The user can type EXIT to quit
                 /*

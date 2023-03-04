@@ -62,6 +62,9 @@ public class AudioReceiver implements Runnable {
         //Main loop.
 
         boolean running = true;
+        sequenceLayer sl = new sequenceLayer();
+        int count = 0;
+        byte[][] send = new byte[16][];
 
         while (running){
 
@@ -70,34 +73,31 @@ public class AudioReceiver implements Runnable {
 
                 byte[] buffer = new byte[514];
                 //Created a byte array to store the audio minus the 2 bytes for the header.
-                byte[] audio = new byte[512];
+
                 //Was here before I was. Default lab jazz.
                 DatagramPacket packet = new DatagramPacket(buffer, 0, 514);
-                DatagramPacket[] send = new DatagramPacket[16];
 
-
-                receiving_socket.receive(packet);
 
 
 
                 receiving_socket.receive(packet);
-                ap.playBlock(buffer);
-                //Get a string from the byte buffer
-                //String str = new String(buffer);
-                //Display it
-                //System.out.print(str + "\n");
 
-                //Creates a ByteBuffer Object and using the wrap method allocates it to the size of the buffer.
-                ByteBuffer bb = ByteBuffer.wrap(buffer);
-
-                //Short variable to store the header data. Removes it from the ByteArray.
-                short header = bb.getShort();
-                //Assignes the remaining Byte Array to audio. This is the audio data.
-                bb.get(audio);
-                //Playes the Audio
-                ap.playBlock(audio);
-                // Prints the header for each packet.
+                short header = sl.getHeader(buffer);
                 System.out.println(header);
+                if(count<=16){
+                    System.out.println(header);
+                    send[header] = sl.remove(buffer);
+                    count++;
+                }
+                else{
+                    for(int i=0; i<16; i++){
+                        ap.playBlock(send[i]);
+                    }
+                    count = 0;
+                    send = new byte[16][];
+                }
+
+                ap.playBlock(buffer);
 
 
             } catch (IOException e){
