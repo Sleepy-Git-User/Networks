@@ -1,6 +1,6 @@
 import java.nio.ByteBuffer;
 
-public class layer {
+class layer {
 
     byte[] add(int pos, byte[] audio){
         short header;
@@ -22,6 +22,7 @@ public class layer {
         return bb.getShort();
     }
 }
+
 
 
 

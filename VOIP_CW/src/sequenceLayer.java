@@ -1,18 +1,5 @@
 import java.nio.ByteBuffer;
-
-public class sequenceLayer extends layer {
-
-    byte[] add(int pos, byte[] audio){
-        return super.add(pos, audio);
-    }
-
-    byte[] remove(byte[] audio){
-        return super.remove(audio);
-    }
-
-    short getHeader(byte[] audio){
-        return super.getHeader(audio);
-    }
+class sequenceLayer extends layer {
 
     byte[] rotateLeft(byte[] audio){
         byte[] left = new byte[audio.length];
@@ -34,6 +21,9 @@ public class sequenceLayer extends layer {
         return right;
     }
 
+    public static void main(String[] args) {
+
+    }
 
 
 }
