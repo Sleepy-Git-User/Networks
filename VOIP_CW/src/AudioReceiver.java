@@ -84,15 +84,18 @@ public class AudioReceiver implements Runnable {
 
                 short header = sl.getHeader(buffer);
                 if(count<=16){
+                    System.out.println(sl.getHeader(buffer));
                     send[header] = sl.remove(buffer);
                     count++;
                 }
                 else{
-                    for(int i=0; i<16; i++){
+                   for(int i=0; i<16; i++){
+                       System.out.println("Reciever = "+Arrays.toString(send[i]));
                         ap.playBlock(send[i]);
                     }
                     count = 0;
                     send = new byte[16][];
+
                 }
 
 

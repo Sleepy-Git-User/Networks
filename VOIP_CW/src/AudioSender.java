@@ -9,6 +9,7 @@
 import java.net.*;
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import CMPC3M06.AudioPlayer;
 import CMPC3M06.AudioRecorder;
@@ -84,6 +85,7 @@ public class AudioSender implements Runnable{
             try{
 
                 byte[] audio = ar.getBlock();
+                System.out.println("Sender = "+ Arrays.toString(audio));
                 byte[] buffer = sl.add(count, audio);
 
                 //Stores the bb.array in to buffer ready to be sent off.
@@ -97,9 +99,12 @@ public class AudioSender implements Runnable{
                 if(count == 16){
                     DatagramPacket[] sorted = sl.rotateLeft(matrix);
                     for (int i = 0; i < 16; i++) {
+
                         sending_socket.send(sorted[i]);
                     }
                     count = 0;
+                    matrix = new DatagramPacket[16];
+
                 }
 
 
