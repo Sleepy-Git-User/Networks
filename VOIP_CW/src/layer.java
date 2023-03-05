@@ -13,10 +13,13 @@ class layer {
         return bb.array();
     }
 
-    byte[] remove(byte[] audio){
-        byte[] payload = new byte[audio.length-2];
-        System.arraycopy(audio, 2, payload, 0, audio.length-2);
-        return payload;
+    byte[] remove(byte[] payload){
+        byte[] audio = new byte[payload.length-2];
+        ByteBuffer bb = ByteBuffer.wrap(payload);
+        // Grabs the short value from the front of the byte array
+        short header = bb.getShort();
+        bb.get(audio);
+        return audio;
     }
 
     short getHeader(byte[] audio){

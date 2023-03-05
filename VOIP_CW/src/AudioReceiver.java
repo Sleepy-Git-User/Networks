@@ -83,9 +83,7 @@ public class AudioReceiver implements Runnable {
                 receiving_socket.receive(packet);
 
                 short header = sl.getHeader(buffer);
-                System.out.println(header);
                 if(count<=16){
-                    System.out.println(header);
                     send[header] = sl.remove(buffer);
                     count++;
                 }
@@ -97,7 +95,7 @@ public class AudioReceiver implements Runnable {
                     send = new byte[16][];
                 }
 
-                ap.playBlock(buffer);
+
 
 
             } catch (IOException e){
