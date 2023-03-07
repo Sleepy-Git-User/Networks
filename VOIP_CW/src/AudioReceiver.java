@@ -10,6 +10,9 @@ import java.net.*;
 import java.io.*;
 import java.util.Arrays;
 import java.nio.ByteBuffer;
+import java.util.LinkedList;
+import java.util.PriorityQueue;
+import java.util.Queue;
 
 
 import CMPC3M06.AudioPlayer;
@@ -65,7 +68,8 @@ public class AudioReceiver implements Runnable {
         sequenceLayer sl = new sequenceLayer();
         int count = 0;
         byte[][] send = new byte[16][];
-
+        Queue<byte[]> q = new LinkedList<byte[]>();
+        int group = 0;
         while (running){
 
             try{
@@ -83,18 +87,31 @@ public class AudioReceiver implements Runnable {
                 receiving_socket.receive(packet);
 
                 short header = sl.getHeader(buffer);
+                short pgroup = sl.getGroup(buffer);
+
+
                 if(count<=16){
-                    System.out.println(sl.getHeader(buffer));
-                    send[header] = sl.remove(buffer);
+                    if((int) pgroup!=group){
+                        if()
+                        System.out.println(pgroup + " : " + group);
+                        q.add(buffer);
+                    }else{
+                        sl.remove(buffer);
+
+                        send[header] = sl.remove(buffer);
+                    }
                     count++;
                 }
                 else{
                    for(int i=0; i<16; i++){
-                       System.out.println("Reciever = "+Arrays.toString(send[i]));
-                        ap.playBlock(send[i]);
+                       System.out.println("Receiver = " + Arrays.toString(send[i]));
+                       if(send[i]!=null) {
+                           ap.playBlock(send[i]);
+                       }
                     }
                     count = 0;
                     send = new byte[16][];
+                    group++;
 
                 }
 

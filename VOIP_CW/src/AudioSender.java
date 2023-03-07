@@ -21,6 +21,7 @@ import uk.ac.uea.cmp.voip.DatagramSocket4;
 import javax.sound.sampled.LineUnavailableException;
 import javax.xml.crypto.Data;
 
+
 public class AudioSender implements Runnable{
 
     static DatagramSocket sending_socket;
@@ -80,13 +81,14 @@ public class AudioSender implements Runnable{
         boolean running = true;
         DatagramPacket[] matrix = new DatagramPacket[16];
         int count = 0;
+        int group = 0;
         sequenceLayer sl = new sequenceLayer();
         while (running){
             try{
 
                 byte[] audio = ar.getBlock();
                 System.out.println("Sender = "+ Arrays.toString(audio));
-                byte[] buffer = sl.add(count, audio);
+                byte[] buffer = sl.add(count, group, audio);
 
                 //Stores the bb.array in to buffer ready to be sent off.
 
@@ -99,10 +101,10 @@ public class AudioSender implements Runnable{
                 if(count == 16){
                     DatagramPacket[] sorted = sl.rotateLeft(matrix);
                     for (int i = 0; i < 16; i++) {
-
                         sending_socket.send(sorted[i]);
                     }
                     count = 0;
+                    group++;
                     matrix = new DatagramPacket[16];
 
                 }
