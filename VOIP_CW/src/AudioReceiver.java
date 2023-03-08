@@ -68,50 +68,47 @@ public class AudioReceiver implements Runnable {
         sequenceLayer sl = new sequenceLayer();
         int count = 0;
         byte[][] send = new byte[16][];
-        Queue<byte[]> q = new LinkedList<byte[]>();
-        int group = 0;
         while (running){
 
             try{
                 //Receive a DatagramPacket (note that the string cant be more than 80 chars)
-
                 byte[] buffer = new byte[514];
                 //Created a byte array to store the audio minus the 2 bytes for the header.
 
                 //Was here before I was. Default lab jazz.
                 DatagramPacket packet = new DatagramPacket(buffer, 0, 514);
 
-
-
-
                 receiving_socket.receive(packet);
 
+
                 short header = sl.getHeader(buffer);
-                short pgroup = sl.getGroup(buffer);
 
 
-                if(count<=16){
-                    if((int) pgroup!=group){
-                        if()
-                        System.out.println(pgroup + " : " + group);
-                        q.add(buffer);
-                    }else{
-                        sl.remove(buffer);
+                if(count<15){
+                    System.out.println(header);
 
-                        send[header] = sl.remove(buffer);
-                    }
+                    send[header] = buffer;
+
                     count++;
                 }
+
                 else{
+                    System.out.println("\n");
+                    send[header] = buffer;
                    for(int i=0; i<16; i++){
-                       System.out.println("Receiver = " + Arrays.toString(send[i]));
-                       if(send[i]!=null) {
-                           ap.playBlock(send[i]);
+//                       System.out.println("Receiver " +  Arrays.toString(send[i]));
+
+                       if (send[i] != null) {
+                           if (sl.getHeader(send[i]) == (short) i) {
+//                               System.out.println("Receiver " +i+ " : " +  Arrays.toString(send[i]));
+                               ap.playBlock(sl.getAudio(send[i]));
+                           }
                        }
                     }
+
                     count = 0;
                     send = new byte[16][];
-                    group++;
+
 
                 }
 

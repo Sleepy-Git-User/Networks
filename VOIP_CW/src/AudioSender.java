@@ -81,15 +81,14 @@ public class AudioSender implements Runnable{
         boolean running = true;
         DatagramPacket[] matrix = new DatagramPacket[16];
         int count = 0;
-        int group = 0;
+
         sequenceLayer sl = new sequenceLayer();
         while (running){
             try{
 
                 byte[] audio = ar.getBlock();
-                System.out.println("Sender = "+ Arrays.toString(audio));
-                byte[] buffer = sl.add(count, group, audio);
-
+                byte[] buffer = sl.add(count, audio);
+//                System.out.println("Sender " + count +" = "+ Arrays.toString(buffer));
                 //Stores the bb.array in to buffer ready to be sent off.
 
                 //Make a DatagramPacket from it, with client address and port number
@@ -104,10 +103,11 @@ public class AudioSender implements Runnable{
                         sending_socket.send(sorted[i]);
                     }
                     count = 0;
-                    group++;
+
                     matrix = new DatagramPacket[16];
 
                 }
+
 
 
 

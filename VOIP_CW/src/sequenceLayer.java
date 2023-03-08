@@ -4,19 +4,21 @@ import java.nio.ByteBuffer;
 class sequenceLayer extends layer {
 
 
-    byte[] add(int pos, int group, byte[] audio){
+    byte[] add(int pos, byte[] audio){
         short header;
-        ByteBuffer bb = ByteBuffer.allocate(4+audio.length);
+        ByteBuffer bb = ByteBuffer.allocate(2+audio.length);
         bb.putShort((short) pos);
-        bb.putShort((short) group);
         bb.put(audio);
         return bb.array();
     }
 
-    short getGroup(byte[] audio){
+
+    byte[] getAudio(byte[] audio){
+        byte[] audio2 = new byte[audio.length-2];
         ByteBuffer bb = ByteBuffer.wrap(audio);
         bb.getShort();
-        return bb.getShort();
+        bb.get(audio2);
+        return audio2;
     }
 
     DatagramPacket[] rotateLeft(DatagramPacket[] audio){

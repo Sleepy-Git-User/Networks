@@ -26,8 +26,6 @@ class layer {
         ByteBuffer bb = ByteBuffer.wrap(audio);
         return bb.getShort();
     }
-
-
 }
 
 
