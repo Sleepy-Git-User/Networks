@@ -83,9 +83,9 @@ public class AudioReceiver implements Runnable {
 
 
                 if(count<15 & header != 3){
-                    System.out.println("Receiver " + (int) header);
+                    //System.out.println("Receiver " + (int) header);
                     if(set.contains((int) header)){
-                        System.out.println("Packet Lost");
+                        //System.out.println("Packet Lost");
                         q.add((buffer));
                         count++;
                         continue;
@@ -106,11 +106,12 @@ public class AudioReceiver implements Runnable {
                        if (send[i] != null) {
                            if (sl.getHeader(send[i]) == (short) i) {
                                prevPacket = send[i];
-//                               System.out.println("Receiver " +i+ " : " +  Arrays.toString(send[i]));
+                               System.out.println("Receiver " +i+ " : " +  Arrays.toString(send[i]));
                                ap.playBlock(sl.getAudio(send[i]));
                            }
                        }
                        else{
+                           System.out.println("Repeated Receiver " +i+ " : " +  Arrays.toString(prevPacket));
                            ap.playBlock(sl.getAudio(prevPacket));
                        }
                     }
