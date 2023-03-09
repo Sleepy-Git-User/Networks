@@ -99,14 +99,19 @@ public class AudioReceiver implements Runnable {
                 else{
                     System.out.println("\n");
 
+                    byte[] prevPacket = new byte[514];
                    for(int i=0; i<16; i++){
 //                       System.out.println("Receiver " +  Arrays.toString(send[i]));
 
                        if (send[i] != null) {
                            if (sl.getHeader(send[i]) == (short) i) {
+                               prevPacket = send[i];
 //                               System.out.println("Receiver " +i+ " : " +  Arrays.toString(send[i]));
                                ap.playBlock(sl.getAudio(send[i]));
                            }
+                       }
+                       else{
+                           ap.playBlock(sl.getAudio(prevPacket));
                        }
                     }
 
@@ -115,10 +120,10 @@ public class AudioReceiver implements Runnable {
                     set.add((int) header);
                     send[header] = buffer;
                     count = 1;
-                    System.out.println("Checking Queue");
+                    //System.out.println("Checking Queue");
                     for(int i=0; i<q.size(); i++){
                         if(q.peek() != null){
-                            System.out.println("Receiver " + sl.getHeader(q.peek()));
+                            //System.out.println("Receiver " + sl.getHeader(q.peek()));
                             set.add((int) sl.getHeader(q.peek()));
                             send[sl.getHeader(q.peek())] = q.poll();
 
