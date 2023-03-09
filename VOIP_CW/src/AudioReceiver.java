@@ -8,11 +8,8 @@
  */
 import java.net.*;
 import java.io.*;
-import java.util.Arrays;
+import java.util.*;
 import java.nio.ByteBuffer;
-import java.util.LinkedList;
-import java.util.PriorityQueue;
-import java.util.Queue;
 
 
 import CMPC3M06.AudioPlayer;
@@ -25,8 +22,7 @@ import uk.ac.uea.cmp.voip.DatagramSocket4;
 import javax.sound.sampled.LineUnavailableException;
 
 public class AudioReceiver implements Runnable {
-
-    static DatagramSocket receiving_socket;
+    static DatagramSocket2 receiving_socket;
     static AudioPlayer ap;
 
     static {
@@ -53,7 +49,7 @@ public class AudioReceiver implements Runnable {
 
         //DatagramSocket receiving_socket;
         try{
-            receiving_socket = new DatagramSocket(PORT);
+            receiving_socket = new DatagramSocket2(PORT);
         } catch (SocketException e){
             System.out.println("ERROR: TextReceiver: Could not open UDP socket to receive from.");
             e.printStackTrace();
@@ -68,6 +64,7 @@ public class AudioReceiver implements Runnable {
         sequenceLayer sl = new sequenceLayer();
         int count = 0;
         byte[][] send = new byte[16][];
+        HashSet<Integer> set = new HashSet<Integer>();
         while (running){
 
             try{
@@ -85,16 +82,24 @@ public class AudioReceiver implements Runnable {
 
 
                 if(count<15){
-                    System.out.println(header);
+                    if(count!=0 && (int) header == 3)
+                        break;
+                    if(set.contains((int) header)){
+                        System.out.println("Packet Lost");
+                        continue;
+                    }
 
                     send[header] = buffer;
-
+                    set.add((int) header);
                     count++;
                 }
 
                 else{
                     System.out.println("\n");
+                    set.clear();
+                    set.add((int) header);
                     send[header] = buffer;
+
                    for(int i=0; i<16; i++){
 //                       System.out.println("Receiver " +  Arrays.toString(send[i]));
 

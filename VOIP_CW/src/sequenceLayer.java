@@ -1,6 +1,8 @@
 import javax.xml.crypto.Data;
 import java.net.DatagramPacket;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
+
 class sequenceLayer extends layer {
 
 
@@ -26,6 +28,7 @@ class sequenceLayer extends layer {
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 left[4 * (3 - j) + i] = audio[4 * i + j];
+                
             }
         }
 
