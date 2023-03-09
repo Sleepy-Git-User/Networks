@@ -65,6 +65,7 @@ public class AudioReceiver implements Runnable {
         int count = 0;
         byte[][] send = new byte[16][];
         HashSet<Integer> set = new HashSet<Integer>();
+        Queue<byte[]> q = new LinkedList<byte[]>();
         while (running){
 
             try{
@@ -81,11 +82,12 @@ public class AudioReceiver implements Runnable {
                 short header = sl.getHeader(buffer);
 
 
-                if(count<15){
-                    if(count!=0 && (int) header == 3)
-                        break;
+                if(count<15 & header != 3){
+                    System.out.println("Receiver " + (int) header);
                     if(set.contains((int) header)){
                         System.out.println("Packet Lost");
+                        q.add((buffer));
+                        count++;
                         continue;
                     }
 
@@ -96,9 +98,6 @@ public class AudioReceiver implements Runnable {
 
                 else{
                     System.out.println("\n");
-                    set.clear();
-                    set.add((int) header);
-                    send[header] = buffer;
 
                    for(int i=0; i<16; i++){
 //                       System.out.println("Receiver " +  Arrays.toString(send[i]));
@@ -111,8 +110,22 @@ public class AudioReceiver implements Runnable {
                        }
                     }
 
-                    count = 0;
                     send = new byte[16][];
+                    set.clear();
+                    set.add((int) header);
+                    send[header] = buffer;
+                    count = 1;
+                    System.out.println("Checking Queue");
+                    for(int i=0; i<q.size(); i++){
+                        if(q.peek() != null){
+                            System.out.println("Receiver " + sl.getHeader(q.peek()));
+                            set.add((int) sl.getHeader(q.peek()));
+                            send[sl.getHeader(q.peek())] = q.poll();
+
+                            count++;
+                        }
+                    }
+                    System.out.println("\n");
 
 
                 }
