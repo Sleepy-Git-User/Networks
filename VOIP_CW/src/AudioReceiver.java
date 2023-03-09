@@ -80,12 +80,13 @@ public class AudioReceiver implements Runnable {
 
 
                 short header = sl.getHeader(buffer);
+                byte[] prevPacket = new byte[514];
 
 
                 if(count<15 & header != 3){
-                    System.out.println("Receiver " + (int) header);
+                    //System.out.println("Receiver " + (int) header);
                     if(set.contains((int) header)){
-                        System.out.println("Packet Lost");
+                        //System.out.println("Packet Lost");
                         q.add((buffer));
                         count++;
                         continue;
@@ -98,21 +99,44 @@ public class AudioReceiver implements Runnable {
 
                 else{
                     System.out.println("\n");
+                    // repetition
+                    int prevNum = 0;
+                    int num = 0;
+                    int nullCount = 0;
+                    for(byte[] b : send){
+                        if(b == null){
+                            /*
+                            if(nullCount > 1 && prevNum > 1){
+                                send[num-1] = send[prevNum-1];
+                            }
 
-                    byte[] prevPacket = new byte[514];
+                             */
+                            send[num] = prevPacket;
+
+                            nullCount++;
+                        }
+                        else{
+                            prevNum = num;
+                            nullCount = 0;
+                            prevPacket = b;
+                        }
+                        num++;
+                    }
+
                    for(int i=0; i<16; i++){
+
 //                       System.out.println("Receiver " +  Arrays.toString(send[i]));
 
-                       if (send[i] != null) {
-                           if (sl.getHeader(send[i]) == (short) i) {
-                               prevPacket = send[i];
-//                               System.out.println("Receiver " +i+ " : " +  Arrays.toString(send[i]));
-                               ap.playBlock(sl.getAudio(send[i]));
-                           }
+                       if (sl.getHeader(send[i]) == (short) i) {
+                           //prevPacket = send[i];
+                           System.out.println("Receiver " +i+ " : " +  Arrays.toString(send[i]));
+                           ap.playBlock(sl.getAudio(send[i]));
                        }
+                       /*
                        else{
                            ap.playBlock(sl.getAudio(prevPacket));
                        }
+                        */
                     }
 
                     send = new byte[16][];
@@ -130,7 +154,7 @@ public class AudioReceiver implements Runnable {
                             count++;
                         }
                     }
-                    System.out.println("\n");
+                    //System.out.println("\n");
 
 
                 }
