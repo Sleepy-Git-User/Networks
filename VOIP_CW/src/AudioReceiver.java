@@ -22,7 +22,7 @@ import uk.ac.uea.cmp.voip.DatagramSocket4;
 import javax.sound.sampled.LineUnavailableException;
 
 public class AudioReceiver implements Runnable {
-    static DatagramSocket2 receiving_socket;
+    static DatagramSocket3 receiving_socket;
     static AudioPlayer ap;
 
     static {
@@ -49,7 +49,7 @@ public class AudioReceiver implements Runnable {
 
         //DatagramSocket receiving_socket;
         try{
-            receiving_socket = new DatagramSocket2(PORT);
+            receiving_socket = new DatagramSocket3(PORT);
         } catch (SocketException e){
             System.out.println("ERROR: TextReceiver: Could not open UDP socket to receive from.");
             e.printStackTrace();
@@ -63,6 +63,7 @@ public class AudioReceiver implements Runnable {
         boolean running = true;
         sequenceLayer sl = new sequenceLayer();
         int count = 0;
+        byte[][] history = new byte[16][];
         byte[][] send = new byte[16][];
         HashSet<Integer> set = new HashSet<Integer>();
         Queue<byte[]> q = new LinkedList<byte[]>();
@@ -81,7 +82,7 @@ public class AudioReceiver implements Runnable {
 
                 short header = sl.getHeader(buffer);
                 byte[] prevPacket = new byte[514];
-
+                byte[] emptyPacket = new byte[514];
 
                 if(count<15 & header != 3){
                     //System.out.println("Receiver " + (int) header);
@@ -97,48 +98,56 @@ public class AudioReceiver implements Runnable {
                     count++;
                 }
 
-                else{
+                else {
                     System.out.println("\n");
-                    // repetition
-                    int prevNum = 0;
-                    int num = 0;
-                    int nullCount = 0;
-                    for(byte[] b : send){
-                        if(b == null){
-                            /*
-                            if(nullCount > 1 && prevNum > 1){
-                                send[num-1] = send[prevNum-1];
+
+                    for (int i = 0; i < 16; i++) {
+
+                        /// issue with the queue? repeating a packet that has header that doesnt exist in that set
+
+                        if (send[i] == null) {
+                            int nullCount = 0;
+                            int collectPacket = 0;
+                            int pivot = i-1;
+                            while (send[i] == null && i< 15) {
+                                nullCount++;
+                                i++;
+                            }
+                            byte[][] collectedP = new byte[nullCount][];
+                            while(nullCount != collectPacket){
+                                if(pivot == - 15){
+                                    collectPacket = nullCount;
+                                }
+                                else if((pivot)< 0){ // in history
+                                    if(history[history.length+pivot] != null){
+                                        collectedP[collectPacket] = history[history.length+pivot];
+                                        collectPacket++;
+                                    }
+                                    pivot--;
+                                }
+                                else if((pivot)>=0){ // in send
+                                    if(send[pivot] != null){
+                                        collectedP[collectPacket] = send[pivot];
+                                        collectPacket++;
+                                    }
+                                    pivot--;
+                                }
+                            }
+                            for(int b = collectedP.length-1; b >= 0; b--){
+                                if(collectedP[b] != null){
+                                    System.out.println("Repeated Receiver " + " : " + Arrays.toString(collectedP[b]));
+                                    ap.playBlock(sl.getAudio(collectedP[b]));
+                                }
                             }
 
-                             */
-                            send[num] = prevPacket;
-
-                            nullCount++;
                         }
-                        else{
-                            prevNum = num;
-                            nullCount = 0;
-                            prevPacket = b;
-                        }
-                        num++;
+                       else if (sl.getHeader(send[i]) == (short) i) {
+                        //prevPacket = send[i];
+                        System.out.println("Receiver " + i + " : " + Arrays.toString(send[i]));
+                        ap.playBlock(sl.getAudio(send[i]));
                     }
-
-                   for(int i=0; i<16; i++){
-
-//                       System.out.println("Receiver " +  Arrays.toString(send[i]));
-
-                       if (sl.getHeader(send[i]) == (short) i) {
-                           //prevPacket = send[i];
-                           System.out.println("Receiver " +i+ " : " +  Arrays.toString(send[i]));
-                           ap.playBlock(sl.getAudio(send[i]));
-                       }
-                       /*
-                       else{
-                           ap.playBlock(sl.getAudio(prevPacket));
-                       }
-                        */
-                    }
-
+                }
+                    history = send;
                     send = new byte[16][];
                     set.clear();
                     set.add((int) header);
@@ -154,7 +163,6 @@ public class AudioReceiver implements Runnable {
                             count++;
                         }
                     }
-                    //System.out.println("\n");
 
 
                 }
