@@ -22,7 +22,7 @@ import uk.ac.uea.cmp.voip.DatagramSocket4;
 import javax.sound.sampled.LineUnavailableException;
 
 public class AudioReceiver implements Runnable {
-    static DatagramSocket2 receiving_socket;
+    static DatagramSocket receiving_socket;
     static AudioPlayer ap;
 
     static {
@@ -49,7 +49,7 @@ public class AudioReceiver implements Runnable {
 
         //DatagramSocket receiving_socket;
         try{
-            receiving_socket = new DatagramSocket2(PORT);
+            receiving_socket = new DatagramSocket(PORT);
         } catch (SocketException e){
             System.out.println("ERROR: TextReceiver: Could not open UDP socket to receive from.");
             e.printStackTrace();
@@ -64,8 +64,9 @@ public class AudioReceiver implements Runnable {
         sequenceLayer sl = new sequenceLayer();
         int count = 0;
         byte[][] send = new byte[16][];
+        byte[][] history = new byte[16][];
         HashSet<Integer> set = new HashSet<Integer>();
-        Queue<byte[]> q = new LinkedList<byte[]>();
+        HashMap<Integer, byte[]> hashmap = new HashMap<Integer, byte[]>();
         while (running){
 
             try{
@@ -85,49 +86,39 @@ public class AudioReceiver implements Runnable {
                 if(count<15 & header != 3){
                     System.out.println("Receiver " + (int) header);
                     if(set.contains((int) header)){
-                        System.out.println("Packet Lost");
-                        q.add((buffer));
+//                        System.out.println("Packet Lost");
+                        hashmap.put((int) header, buffer);
                         count++;
                         continue;
                     }
 
                     send[header] = buffer;
-                    set.add((int) header);
+//                    set.add((int) header);
                     count++;
                 }
 
                 else{
-                    System.out.println("\n");
-
-                   for(int i=0; i<16; i++){
+//                    System.out.println("\n");
+                    for(int i=0; i<16; i++){
+                        count = 0;
 //                       System.out.println("Receiver " +  Arrays.toString(send[i]));
-
+                        history[i] = send[i];
                        if (send[i] != null) {
                            if (sl.getHeader(send[i]) == (short) i) {
 //                               System.out.println("Receiver " +i+ " : " +  Arrays.toString(send[i]));
                                ap.playBlock(sl.getAudio(send[i]));
+                               send[i] = hashmap.getOrDefault(i, null);
+                               if(hashmap.remove(i) != null){
+                                   count++;
+                               }
+//                               send[i] = hashmap.get(i);
                            }
                        }
                     }
-
-                    send = new byte[16][];
                     set.clear();
                     set.add((int) header);
                     send[header] = buffer;
-                    count = 1;
-                    System.out.println("Checking Queue");
-                    for(int i=0; i<q.size(); i++){
-                        if(q.peek() != null){
-                            System.out.println("Receiver " + sl.getHeader(q.peek()));
-                            set.add((int) sl.getHeader(q.peek()));
-                            send[sl.getHeader(q.peek())] = q.poll();
-
-                            count++;
-                        }
-                    }
-                    System.out.println("\n");
-
-
+                    count++;
                 }
 
 
