@@ -84,28 +84,27 @@ public class AudioReceiver implements Runnable {
 
 
                 if(count<15 & header != 3){
-                    System.out.println("Receiver " + (int) header);
+                    //System.out.println("Receiver " + (int) header);
                     if(set.contains((int) header)){
 //                        System.out.println("Packet Lost");
                         hashmap.put((int) header, buffer);
+
                         count++;
                         continue;
                     }
 
                     send[header] = buffer;
-//                    set.add((int) header);
+                    set.add((int) header);
                     count++;
                 }
 
                 else{
-//                    System.out.println("\n");
-                    for(int i=0; i<16; i++){
+                   for(int i=0; i<16; i++){
                         count = 0;
 //                       System.out.println("Receiver " +  Arrays.toString(send[i]));
                         history[i] = send[i];
                        if (send[i] != null) {
                            if (sl.getHeader(send[i]) == (short) i) {
-//                               System.out.println("Receiver " +i+ " : " +  Arrays.toString(send[i]));
                                ap.playBlock(sl.getAudio(send[i]));
                                send[i] = hashmap.getOrDefault(i, null);
                                if(hashmap.remove(i) != null){
