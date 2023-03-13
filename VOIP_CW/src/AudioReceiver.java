@@ -22,7 +22,7 @@ import uk.ac.uea.cmp.voip.DatagramSocket4;
 import javax.sound.sampled.LineUnavailableException;
 
 public class AudioReceiver implements Runnable {
-    static DatagramSocket receiving_socket;
+    static DatagramSocket3 receiving_socket;
     static AudioPlayer ap;
 
     static {
@@ -49,7 +49,7 @@ public class AudioReceiver implements Runnable {
 
         //DatagramSocket receiving_socket;
         try{
-            receiving_socket = new DatagramSocket(PORT);
+            receiving_socket = new DatagramSocket3(PORT);
         } catch (SocketException e){
             System.out.println("ERROR: TextReceiver: Could not open UDP socket to receive from.");
             e.printStackTrace();
@@ -87,7 +87,7 @@ public class AudioReceiver implements Runnable {
                 and if the count is more than 15 it signifies that the array is full
                 Both cause the array to be played
                  */
-                if(count<15 & header != 3){
+                if(count<16 & header != 3){
                     //System.out.println("Receiver " + (int) header);
                     if(set.contains((int) header)){ //Adds to hashmap if the header is already in the set
 //                        System.out.println("Packet Lost");
@@ -102,26 +102,71 @@ public class AudioReceiver implements Runnable {
                 }
 
                 else{
+                    byte[][] temp = send;
+                    count = 0; //Resets the count
+                    set.clear(); //Clears the set
                     for(int i=0; i<16; i++){ //Plays all the packets in the array
-                        count = 0; //Resets the count
+                        if (send[i] == null) {
+                            int nullCount = 0;
+                            int collectPacket = 0;
+                            int pivot = i-1;
+                            int num = i;
+                            while (send[num] == null && num< 15) {
+                                nullCount++;
+                                num++;
+                            }
+                            byte[][] collectedP = new byte[nullCount][];
+                            while(nullCount != collectPacket){
+                                if(pivot == -15){
+                                    collectPacket = nullCount;
+                                }
+                                else if((pivot)< 0){ // in history
+                                    if(history[history.length+pivot] != null){
+                                        collectedP[collectPacket] = history[history.length+pivot];
+                                        collectPacket++;
+                                    }
+                                    pivot--;
+                                }
+                                else if((pivot)>=0){ // in send
+                                    if(send[pivot] != null){
+                                        collectedP[collectPacket] = send[pivot];
+                                        collectPacket++;
+                                    }
+                                    pivot--;
+                                }
+                            }
+                            num = i;
+                            for(int b = collectedP.length-1; b >= 0; b--){
+                                if(collectedP[b] != null){
+                                    send[num] = collectedP[b];
+                                    num++;
+                                }
+                            }
+                        }
+
 //                       System.out.println("Receiver " +  Arrays.toString(send[i]));
                         history[i] = send[i];
                         //Stores the packets in the history array
                        //Which can be used for compensation
                         if (send[i] != null) {
                            //Play packet
-                            if (sl.getHeader(send[i]) == (short) i) {
+
+                                System.out.println("Receiver: " + Arrays.toString(send[i]));
                                 ap.playBlock(sl.getAudio(send[i]));
                                //Checks if the packet is in the hashmap if it is add it to the array
-                                send[i] = hashmap.getOrDefault(i, null); //If not add null to the array
-                                if(hashmap.remove(i) != null){ //If the packet is in the hashmap remove it
+
+                                if(hashmap.containsKey(i)){ //If the packet is in the hashmap remove it
+                                    temp[i] = hashmap.get(i);
+                                    set.add((int) sl.getHeader(hashmap.get(i)));
+                                    hashmap.remove(i);
                                     count++; //Increment the count
                                 }
+                                else temp[i] = null;
 //                               send[i] = hashmap.get(i);
-                            }
+
                         }
                     }
-                    set.clear(); //Clears the set
+                    send = temp;
                     set.add((int) header); //Adds the new header to the set
                     send[header] = buffer; //Adds the new packet to the array
                     count++; //Increments the count
