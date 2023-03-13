@@ -87,6 +87,7 @@ public class AudioReceiver implements Runnable {
                 and if the count is more than 15 it signifies that the array is full
                 Both cause the array to be played
                  */
+                //Increments the count
                 if(count<16 & header != 3){
                     //System.out.println("Receiver " + (int) header);
                     if(set.contains((int) header)){ //Adds to hashmap if the header is already in the set
@@ -169,9 +170,8 @@ public class AudioReceiver implements Runnable {
                     send = temp;
                     set.add((int) header); //Adds the new header to the set
                     send[header] = buffer; //Adds the new packet to the array
-                    count++; //Increments the count
+                    count++;
                 }
-
 
 
 
