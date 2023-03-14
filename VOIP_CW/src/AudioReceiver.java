@@ -121,16 +121,16 @@ public class AudioReceiver implements Runnable {
                                 if(pivot == -15){
                                     collectPacket = nullCount;
                                 }
-                                else if((pivot)< 0){ // in history
-                                    if(history[history.length+pivot] != null){
-                                        collectedP[collectPacket] = history[history.length+pivot];
+                                else if((pivot)>=0){ // in send
+                                    if(send[pivot] != null){
+                                        collectedP[collectPacket] = send[pivot];
                                         collectPacket++;
                                     }
                                     pivot--;
                                 }
-                                else if((pivot)>=0){ // in send
-                                    if(send[pivot] != null){
-                                        collectedP[collectPacket] = send[pivot];
+                                else{ // in history
+                                    if(history[history.length+pivot] != null){
+                                        collectedP[collectPacket] = history[history.length+pivot];
                                         collectPacket++;
                                     }
                                     pivot--;
