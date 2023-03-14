@@ -112,10 +112,12 @@ public class AudioReceiver implements Runnable {
                             int collectPacket = 0;
                             int pivot = i-1;
                             int num = i;
+
                             while (send[num] == null && num< 15) {
                                 nullCount++;
                                 num++;
                             }
+
                             byte[][] collectedP = new byte[nullCount][];
                             while(nullCount != collectPacket){
                                 if(pivot == -15){
@@ -151,7 +153,12 @@ public class AudioReceiver implements Runnable {
                        //Which can be used for compensation
                         if (send[i] != null) {
                            //Play packet
+//    ***************************************************************************************************************************************************************************************************************
 
+                            //Instead of looking in both send and history when we play send[i] packet it gets put into history[i]
+                            //and this means we may lose i packets to look through but we only have to look through history
+
+//    ***************************************************************************************************************************************************************************************************************
                                 System.out.println("Receiver: " + Arrays.toString(send[i]));
                                 ap.playBlock(sl.getAudio(send[i]));
                                //Checks if the packet is in the hashmap if it is add it to the array
