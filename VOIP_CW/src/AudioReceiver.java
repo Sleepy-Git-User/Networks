@@ -67,6 +67,9 @@ public class AudioReceiver implements Runnable {
         byte[][] history = new byte[16][]; //Array to store the played packets
         HashSet<Integer> set = new HashSet<Integer>(); //Set to store the headers to check for duplicates
         HashMap<Integer, byte[]> hashmap = new HashMap<Integer, byte[]>(); //Hashmap to store the packets to be played later
+
+        int blockNum =0;
+        Queue<byte[]> queue = new LinkedList<>();
         while (running){
 
             try{
@@ -108,6 +111,10 @@ public class AudioReceiver implements Runnable {
                     set.clear(); //Clears the set
                     for(int i=0; i<16; i++){ //Plays all the packets in the array
                         if (send[i] == null) {
+                            Stack<byte[]> tempStack = new Stack<>();
+                            for(byte[] b : queue){
+                                tempStack.push(b);
+                            }
                             int nullCount = 0;
                             int collectPacket = 0;
                             int pivot = i-1;
@@ -120,9 +127,16 @@ public class AudioReceiver implements Runnable {
 
                             byte[][] collectedP = new byte[nullCount][];
                             while(nullCount != collectPacket){
-                                if(pivot == -15){
+                                if(nullCount == 15){
                                     collectPacket = nullCount;
                                 }
+                                else{
+                                    if(!tempStack.empty()){
+                                        collectedP[collectPacket] = tempStack.pop();
+                                        collectPacket++;
+                                    }
+                                }
+                                /*
                                 else if((pivot)>=0){ // in send
                                     if(send[pivot] != null){
                                         collectedP[collectPacket] = send[pivot];
@@ -137,14 +151,23 @@ public class AudioReceiver implements Runnable {
                                     }
                                     pivot--;
                                 }
+                                 */
                             }
                             num = i;
                             for(int b = collectedP.length-1; b >= 0; b--){
                                 if(collectedP[b] != null){
                                     send[num] = collectedP[b];
-                                    num++;
+                                    queue.add(collectedP[b]);
                                 }
+                                num++;
                             }
+                            if(num == 15){
+                                i = 15;
+                            }
+                            else{
+                                i = num-nullCount;
+                            }
+
                         }
 
 //                       System.out.println("Receiver " +  Arrays.toString(send[i]));
@@ -159,8 +182,12 @@ public class AudioReceiver implements Runnable {
                             //and this means we may lose i packets to look through but we only have to look through history
 
 //    ***************************************************************************************************************************************************************************************************************
+                                queue.add(send[i]);
                                 System.out.println("Receiver: " + Arrays.toString(send[i]));
                                 ap.playBlock(sl.getAudio(send[i]));
+                                if(blockNum>2){
+                                    queue.remove();
+                                }
                                //Checks if the packet is in the hashmap if it is add it to the array
 
                                 if(hashmap.containsKey(i)){ //If the packet is in the hashmap remove it
@@ -178,6 +205,8 @@ public class AudioReceiver implements Runnable {
                     set.add((int) header); //Adds the new header to the set
                     send[header] = buffer; //Adds the new packet to the array
                     count++;
+                    blockNum++;
+                    System.out.println("\n");
                 }
 
 
