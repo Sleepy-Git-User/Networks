@@ -14,6 +14,7 @@ import java.util.Arrays;
 
 import CMPC3M06.AudioPlayer;
 import CMPC3M06.AudioRecorder;
+import SecurityLayer.RSAEncryptDecrypt;
 import uk.ac.uea.cmp.voip.DatagramSocket2;
 import uk.ac.uea.cmp.voip.DatagramSocket3;
 import uk.ac.uea.cmp.voip.DatagramSocket4;
@@ -100,6 +101,13 @@ public class AudioSender implements Runnable{
                 if(count == 16){
                     byte[][] sorted = sl.rotateLeft(matrix);
                     for (int i = 0; i < 16; i++) {
+                        System.out.println("a "+sorted[i].length);
+                        BigInteger encrypted = RSAEncryptDecrypt.encrypt(new BigInteger(sorted[i]), rsaReceiver.theirKeys.getPublicKey(), rsaReceiver.theirKeys.getModulus());
+                        System.out.println("Encrypt Length: "+encrypted.bitLength());
+                        sorted[i] = encrypted.toByteArray();
+                        BigInteger decrypt = RSAEncryptDecrypt.decrypt(new BigInteger(sorted[i]), rsaSender.Mykeys.getPrivateKey(), rsaSender.Mykeys.getModulus());
+                        System.out.println("I am de: "+ decrypt.bitLength());
+
                         sending_socket.send(new DatagramPacket(sorted[i], sorted[i].length, clientIP, PORT));
                     }
                     count = 0;

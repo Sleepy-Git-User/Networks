@@ -6,6 +6,7 @@
  *
  * @author  abj
  */
+import java.math.BigInteger;
 import java.net.*;
 import java.io.*;
 import java.util.*;
@@ -14,6 +15,7 @@ import java.nio.ByteBuffer;
 
 import CMPC3M06.AudioPlayer;
 import CMPC3M06.AudioRecorder;
+import SecurityLayer.RSAEncryptDecrypt;
 import uk.ac.uea.cmp.voip.DatagramSocket2;
 import uk.ac.uea.cmp.voip.DatagramSocket3;
 import uk.ac.uea.cmp.voip.DatagramSocket4;
@@ -78,8 +80,15 @@ public class AudioReceiver implements Runnable {
 
                 receiving_socket.receive(packet);
 
+                BigInteger decrypt = RSAEncryptDecrypt.decrypt(new BigInteger(buffer), rsaSender.Mykeys.getPrivateKey(), rsaSender.Mykeys.getModulus());
+
+                buffer = decrypt.toByteArray();
+
+                System.out.println(buffer);
                 //Gets header
                 short header = sl.getHeader(buffer);
+
+                System.out.println("Receiver " + (int) header);
 
                 /*
                 If the header is 3 it signifies the start of a new packet
