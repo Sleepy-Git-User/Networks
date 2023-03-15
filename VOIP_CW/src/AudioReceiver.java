@@ -38,7 +38,6 @@ public class AudioReceiver implements Runnable {
         thread.start();
     }
     public void run (){
-
         //***************************************************
         //Port to open socket on
         int PORT = 55555;
@@ -159,7 +158,7 @@ public class AudioReceiver implements Runnable {
                             //and this means we may lose i packets to look through but we only have to look through history
 
 //    ***************************************************************************************************************************************************************************************************************
-                                System.out.println("Receiver: " + Arrays.toString(send[i]));
+                                //System.out.println("Receiver: " + Arrays.toString(send[i]));
                                 ap.playBlock(sl.getAudio(send[i]));
                                //Checks if the packet is in the hashmap if it is add it to the array
 
