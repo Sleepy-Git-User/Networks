@@ -6,6 +6,7 @@
  *
  * @author  abj
  */
+import java.math.BigInteger;
 import java.net.*;
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -19,12 +20,12 @@ import uk.ac.uea.cmp.voip.DatagramSocket4;
 
 
 import javax.sound.sampled.LineUnavailableException;
-import javax.xml.crypto.Data;
+
 
 
 public class AudioSender implements Runnable{
 
-    static DatagramSocket3 sending_socket;
+    static DatagramSocket sending_socket;
     static AudioRecorder ar;
 
     static {
@@ -61,7 +62,7 @@ public class AudioSender implements Runnable{
 
         //DatagramSocket sending_socket;
         try{
-            sending_socket = new DatagramSocket3();
+            sending_socket = new DatagramSocket();
         } catch (SocketException e){
             System.out.println("ERROR: TextSender: Could not open UDP socket to send from.");
             e.printStackTrace();

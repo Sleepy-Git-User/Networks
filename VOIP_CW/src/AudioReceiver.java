@@ -22,7 +22,7 @@ import uk.ac.uea.cmp.voip.DatagramSocket4;
 import javax.sound.sampled.LineUnavailableException;
 
 public class AudioReceiver implements Runnable {
-    static DatagramSocket3 receiving_socket;
+    static DatagramSocket receiving_socket;
     static AudioPlayer ap;
 
     static {
@@ -38,7 +38,6 @@ public class AudioReceiver implements Runnable {
         thread.start();
     }
     public void run (){
-
         //***************************************************
         //Port to open socket on
         int PORT = 55555;
@@ -49,7 +48,7 @@ public class AudioReceiver implements Runnable {
 
         //DatagramSocket receiving_socket;
         try{
-            receiving_socket = new DatagramSocket3(PORT);
+            receiving_socket = new DatagramSocket(PORT);
         } catch (SocketException e){
             System.out.println("ERROR: TextReceiver: Could not open UDP socket to receive from.");
             e.printStackTrace();
@@ -159,7 +158,7 @@ public class AudioReceiver implements Runnable {
                             //and this means we may lose i packets to look through but we only have to look through history
 
 //    ***************************************************************************************************************************************************************************************************************
-                                System.out.println("Receiver: " + Arrays.toString(send[i]));
+                                //System.out.println("Receiver: " + Arrays.toString(send[i]));
                                 ap.playBlock(sl.getAudio(send[i]));
                                //Checks if the packet is in the hashmap if it is add it to the array
 
