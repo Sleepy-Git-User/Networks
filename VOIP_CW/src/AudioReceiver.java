@@ -22,7 +22,7 @@ import uk.ac.uea.cmp.voip.DatagramSocket4;
 import javax.sound.sampled.LineUnavailableException;
 
 public class AudioReceiver implements Runnable {
-    static DatagramSocket3 receiving_socket;
+    static DatagramSocket2 receiving_socket;
     static AudioPlayer ap;
 
     static {
@@ -49,7 +49,7 @@ public class AudioReceiver implements Runnable {
 
         //DatagramSocket receiving_socket;
         try{
-            receiving_socket = new DatagramSocket3(PORT);
+            receiving_socket = new DatagramSocket2(PORT);
         } catch (SocketException e){
             System.out.println("ERROR: TextReceiver: Could not open UDP socket to receive from.");
             e.printStackTrace();
@@ -117,17 +117,19 @@ public class AudioReceiver implements Runnable {
                             }
                             int nullCount = 0;
                             int collectPacket = 0;
-                            int pivot = i-1;
                             int num = i;
 
                             while (send[num] == null && num< 15) {
                                 nullCount++;
                                 num++;
                             }
+                            if(num == 15){
+                                nullCount++;
+                            }
 
                             byte[][] collectedP = new byte[nullCount][];
                             while(nullCount != collectPacket){
-                                if(nullCount == 15){
+                                if(blockNum == 0){
                                     collectPacket = nullCount;
                                 }
                                 else{
@@ -161,7 +163,7 @@ public class AudioReceiver implements Runnable {
                                 }
                                 num++;
                             }
-                            if(num == 15){
+                            if(blockNum == 0){
                                 i = 15;
                             }
                             else{
@@ -183,7 +185,7 @@ public class AudioReceiver implements Runnable {
 
 //    ***************************************************************************************************************************************************************************************************************
                                 queue.add(send[i]);
-                                System.out.println("Receiver: " + Arrays.toString(send[i]));
+                                System.out.println("Receiver " +  i  + ": " + Arrays.toString(send[i]));
                                 ap.playBlock(sl.getAudio(send[i]));
                                 if(blockNum>2){
                                     queue.remove();
@@ -206,6 +208,7 @@ public class AudioReceiver implements Runnable {
                     send[header] = buffer; //Adds the new packet to the array
                     count++;
                     blockNum++;
+                    System.out.println(blockNum);
                     System.out.println("\n");
                 }
 
