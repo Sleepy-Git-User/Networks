@@ -24,7 +24,7 @@ import javax.xml.crypto.Data;
 
 public class AudioSender implements Runnable{
 
-    static DatagramSocket3 sending_socket;
+    static DatagramSocket sending_socket;
     static AudioRecorder ar;
 
     static {
@@ -61,7 +61,7 @@ public class AudioSender implements Runnable{
 
         //DatagramSocket sending_socket;
         try{
-            sending_socket = new DatagramSocket3();
+            sending_socket = new DatagramSocket();
         } catch (SocketException e){
             System.out.println("ERROR: TextSender: Could not open UDP socket to send from.");
             e.printStackTrace();
@@ -79,7 +79,7 @@ public class AudioSender implements Runnable{
         //Main loop.
 
         boolean running = true;
-        DatagramPacket[] matrix = new DatagramPacket[16];
+        byte[][] matrix = new byte[16][];
         int count = 0;
 
         sequenceLayer sl = new sequenceLayer();
@@ -92,19 +92,18 @@ public class AudioSender implements Runnable{
                 //Stores the bb.array in to buffer ready to be sent off.
 
                 //Make a DatagramPacket from it, with client address and port number
-                DatagramPacket packet = new DatagramPacket(buffer, buffer.length, clientIP, PORT);
 
 
-                matrix[count] = packet;
+                matrix[count] = buffer;
                 count++;
                 if(count == 16){
-                    DatagramPacket[] sorted = sl.rotateLeft(matrix);
+                    byte[][] sorted = sl.rotateLeft(matrix);
                     for (int i = 0; i < 16; i++) {
-                        sending_socket.send(sorted[i]);
+                        sending_socket.send(new DatagramPacket(sorted[i], sorted[i].length, clientIP, PORT));
                     }
                     count = 0;
 
-                    matrix = new DatagramPacket[16];
+                    matrix = new byte[16][];
 
                 }
 
