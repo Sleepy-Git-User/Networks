@@ -70,6 +70,7 @@ public class rsaSender implements Runnable{
                 if (TheyHaveKeys && rsaReceiver.haveKeys){
 
                     BigInteger Encrypted = RSAEncryptDecrypt.encrypt(Mykeys.getPublicKey(),rsaReceiver.theirKeys.getPublicKey(),rsaReceiver.theirKeys.getModulus());
+                    System.out.println("length of key" + Mykeys.getPublicKey().bitLength() + " Length of encrypted key "+ Encrypted.bitLength());
                     // After encryption we put this value in the packet to send off.
                     bb.put(String.valueOf(Encrypted).getBytes(StandardCharsets.UTF_8));
                     System.out.println("Sent Encrypted message to confirm we have eachothers keys");
