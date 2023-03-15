@@ -22,7 +22,7 @@ import uk.ac.uea.cmp.voip.DatagramSocket4;
 import javax.sound.sampled.LineUnavailableException;
 
 public class AudioReceiver implements Runnable {
-    static DatagramSocket2 receiving_socket;
+    static DatagramSocket3 receiving_socket;
     static AudioPlayer ap;
 
     static {
@@ -49,7 +49,7 @@ public class AudioReceiver implements Runnable {
 
         //DatagramSocket receiving_socket;
         try{
-            receiving_socket = new DatagramSocket2(PORT);
+            receiving_socket = new DatagramSocket3(PORT);
         } catch (SocketException e){
             System.out.println("ERROR: TextReceiver: Could not open UDP socket to receive from.");
             e.printStackTrace();
@@ -100,9 +100,12 @@ public class AudioReceiver implements Runnable {
                         continue;
                     }
 
-                    send[header] = buffer; //Adds to the array to be played
-                    set.add((int) header); //Adds to the set
+                    if(header >= 0 && header < 16){
+                        send[header] = buffer; //Adds to the array to be played
+                        set.add((int) header); //Adds to the set
+                    }
                     count++;
+
                 }
 
                 else{
@@ -127,47 +130,39 @@ public class AudioReceiver implements Runnable {
                                 nullCount++;
                             }
 
-                            byte[][] collectedP = new byte[nullCount][];
-                            while(nullCount != collectPacket){
-                                if(blockNum == 0){
-                                    collectPacket = nullCount;
-                                }
-                                else{
-                                    if(!tempStack.empty()){
-                                        collectedP[collectPacket] = tempStack.pop();
-                                        collectPacket++;
-                                    }
-                                }
-                                /*
-                                else if((pivot)>=0){ // in send
-                                    if(send[pivot] != null){
-                                        collectedP[collectPacket] = send[pivot];
-                                        collectPacket++;
-                                    }
-                                    pivot--;
-                                }
-                                else{ // in history
-                                    if(history[history.length+pivot] != null){
-                                        collectedP[collectPacket] = history[history.length+pivot];
-                                        collectPacket++;
-                                    }
-                                    pivot--;
-                                }
-                                 */
-                            }
-                            num = i;
-                            for(int b = collectedP.length-1; b >= 0; b--){
-                                if(collectedP[b] != null){
-                                    send[num] = collectedP[b];
-                                    queue.add(collectedP[b]);
-                                }
-                                num++;
-                            }
-                            if(blockNum == 0){
-                                i = 15;
+                            //System.out.println("packet loss amount " + nullCount);
+                            if(nullCount >= 2){
+                                //System.out.println(" Large packet loss count ");
+                                i = num;
                             }
                             else{
-                                i = num-nullCount;
+                                byte[][] collectedP = new byte[nullCount][];
+                                while(nullCount != collectPacket){
+                                    if(blockNum == 0){
+                                        collectPacket = nullCount;
+                                    }
+                                    else{
+                                        if(!tempStack.empty()){
+                                            collectedP[collectPacket] = tempStack.pop();
+                                            collectPacket++;
+                                        }
+                                    }
+
+                                }
+                                num = i;
+                                for(int b = collectedP.length-1; b >= 0; b--){
+                                    if(collectedP[b] != null){
+                                        send[num] = collectedP[b];
+                                        queue.add(collectedP[b]);
+                                    }
+                                    num++;
+                                }
+                                if(blockNum == 0){
+                                    i = 15;
+                                }
+                                else{
+                                    i = num-nullCount;
+                                }
                             }
 
                         }
@@ -187,7 +182,7 @@ public class AudioReceiver implements Runnable {
                                 queue.add(send[i]);
                                 System.out.println("Receiver " +  i  + ": " + Arrays.toString(send[i]));
                                 ap.playBlock(sl.getAudio(send[i]));
-                                if(blockNum>2){
+                                if(blockNum>1){
                                     queue.remove();
                                 }
                                //Checks if the packet is in the hashmap if it is add it to the array
@@ -208,7 +203,7 @@ public class AudioReceiver implements Runnable {
                     send[header] = buffer; //Adds the new packet to the array
                     count++;
                     blockNum++;
-                    System.out.println(blockNum);
+                    System.out.println("block count "  + blockNum);
                     System.out.println("\n");
                 }
 
