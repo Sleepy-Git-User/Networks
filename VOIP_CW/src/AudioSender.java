@@ -115,9 +115,6 @@ public class AudioSender implements Runnable{
 
                         byte[] ciphertext = xor.encrypt(sorted[i], rsaSender.xorKey);
                         sorted[i] = ciphertext;
-                        BigInteger encrypted = RSAEncryptDecrypt.encrypt(new BigInteger(sorted[i]), rsaReceiver.theirKeys.getPublicKey(), rsaReceiver.theirKeys.getModulus());
-                        sorted[i] = encrypted.toByteArray();
-
 
                         sending_socket.send(new DatagramPacket(sorted[i], sorted[i].length, clientIP, PORT));
                     }

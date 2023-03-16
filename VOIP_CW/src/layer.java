@@ -15,7 +15,7 @@ class layer {
 
     byte[] addTime(byte[] audio){
         long time = System.currentTimeMillis();
-        System.out.println("Time :"+time);
+//        System.out.println("Time :"+time);
         ByteBuffer bb = ByteBuffer.allocate(8+audio.length);
         bb.putLong(time);
         bb.put(audio);
