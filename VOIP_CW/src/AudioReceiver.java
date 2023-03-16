@@ -85,12 +85,22 @@ public class AudioReceiver implements Runnable {
 
                 receiving_socket.receive(packet);
 
+
                 buffer = xor.decrypt(buffer, rsaSender.xorKey);
+
+                buffer = ciphertext;
+
 //
                 long timeStamp = sl.getTime(buffer);
                 buffer = sl.removeTime(buffer);
                 System.out.println("Current "+System.currentTimeMillis());
                 System.out.println("Received "+timeStamp);
+
+
+
+                // Signing shit here
+                // to here
+                //Gets header
                 short header = sl.getHeader(buffer);
                 long delay = System.currentTimeMillis() - timeStamp;
                 String line = header+ "," + timeStamp + ","+ delay;
