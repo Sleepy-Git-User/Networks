@@ -12,6 +12,7 @@ import java.io.*;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.util.Arrays;
+import java.util.zip.CRC32;
 
 
 import CMPC3M06.AudioPlayer;
@@ -29,7 +30,7 @@ import javax.sound.sampled.LineUnavailableException;
 
 public class AudioSender implements Runnable{
 
-    static DatagramSocket sending_socket;
+    static DatagramSocket4 sending_socket;
     static AudioRecorder ar;
 
     static {
@@ -66,7 +67,7 @@ public class AudioSender implements Runnable{
 
         //DatagramSocket sending_socket;
         try{
-            sending_socket = new DatagramSocket();
+            sending_socket = new DatagramSocket4();
         } catch (SocketException e){
             System.out.println("ERROR: TextSender: Could not open UDP socket to send from.");
             e.printStackTrace();
@@ -97,7 +98,18 @@ public class AudioSender implements Runnable{
             try{
 
                 byte[] audio = ar.getBlock();
-                byte[] buffer = sl.add(count, audio);
+                //int hash = Arrays.hashCode(audio);
+                int sum =0;
+                for(byte b : audio){
+                    sum +=b & 0xFF;
+                }
+                short hash = (short)(sum % 65535);
+//                CRC32 crc = new CRC32();
+//                crc.update(audio);
+//                short hash = (short) crc.getValue();
+                //System.out.println(count + " Before Hash: " + hash);
+                byte[] buffer = sl.add(hash, count, audio);
+
 //                System.out.println("Sender " + count +" = "+ Arrays.toString(buffer));
                 //Stores the bb.array in to buffer ready to be sent off.
 

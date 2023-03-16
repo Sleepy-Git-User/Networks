@@ -42,7 +42,7 @@ public class rsaSender implements Runnable{
             // Creates a Bytebuffer and allocates the size to 2 bytes for the short header and then to the size of text.length
 
             if (!acknowledgement){ // Sends our public key with the header 0 to signify this packet holds a public key.
-                ByteBuffer bb = ByteBuffer.allocate(512);
+                ByteBuffer bb = ByteBuffer.allocate(514);
                 bb.putShort((short)0);
                 bb.put(publicKey);
                 PS.send(bb);
@@ -50,7 +50,7 @@ public class rsaSender implements Runnable{
 
             }
             if (rsaReceiver.haveTheirKeys){
-                ByteBuffer bb = ByteBuffer.allocate(512);
+                ByteBuffer bb = ByteBuffer.allocate(514);
                 bb.putShort((short) 1);
                 BigInteger Encrypted = RSAEncryptDecrypt.encrypt(Mykeys.getPublicKey(),rsaReceiver.theirKeys.getPublicKey(),rsaReceiver.theirKeys.getModulus());
                 bb.put(String.valueOf(Encrypted).getBytes(StandardCharsets.UTF_8));
