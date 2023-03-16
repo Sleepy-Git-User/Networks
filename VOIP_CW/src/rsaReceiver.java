@@ -53,10 +53,10 @@ public class rsaReceiver implements Runnable{
 
             try{
                 //Receive a DatagramPacket of 512 bytes
-                byte[] buffer = new byte[512];
+                byte[] buffer = new byte[514];
 
                 //Payload will store the public key.
-                byte[] payload = new byte[510];
+                byte[] payload = new byte[512];
                 DatagramPacket packet = new DatagramPacket(buffer, 0, buffer.length);
 
                 receiving_socket.receive(packet);

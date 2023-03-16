@@ -25,7 +25,7 @@ import uk.ac.uea.cmp.voip.DatagramSocket4;
 import javax.sound.sampled.LineUnavailableException;
 
 public class AudioReceiver implements Runnable {
-    static DatagramSocket receiving_socket;
+    static DatagramSocket4 receiving_socket;
     static AudioPlayer ap;
 
     static {
@@ -51,7 +51,7 @@ public class AudioReceiver implements Runnable {
 
         //DatagramSocket receiving_socket;
         try{
-            receiving_socket = new DatagramSocket(PORT);
+            receiving_socket = new DatagramSocket4(PORT);
         } catch (SocketException e){
             System.out.println("ERROR: TextReceiver: Could not open UDP socket to receive from.");
             e.printStackTrace();
@@ -70,17 +70,20 @@ public class AudioReceiver implements Runnable {
         HashSet<Integer> set = new HashSet<Integer>(); //Set to store the headers to check for duplicates
         HashMap<Integer, byte[]> hashmap = new HashMap<Integer, byte[]>(); //Hashmap to store the packets to be played later
 
+        int packetLossAmount = -16;
+        int corruptedHeader = 0;
+        int corrupted = 0;
         int blockNum =0;
         Queue<byte[]> queue = new LinkedList<>();
         while (running){
 
             try{
                 //Receive a DatagramPacket (note that the string cant be more than 80 chars)
-                byte[] buffer = new byte[514];
+                byte[] buffer = new byte[516];
                 //Created a byte array to store the audio minus the 2 bytes for the header.
 
                 //Was here before I was. Default lab jazz.
-                DatagramPacket packet = new DatagramPacket(buffer, 0, 514);
+                DatagramPacket packet = new DatagramPacket(buffer, 0, 516);
 
                 receiving_socket.receive(packet);
                 byte[] ciphertext = xor.decrypt(buffer, rsaSender.xorKey);
@@ -88,7 +91,10 @@ public class AudioReceiver implements Runnable {
                 buffer = ciphertext;
 
                 //Gets header
+
+                short hash = sl.getHash(buffer);
                 short header = sl.getHeader(buffer);
+
 
                 //System.out.println("Receiver " + (int) header);
 
@@ -108,8 +114,17 @@ public class AudioReceiver implements Runnable {
                     }
 
                     if(header >= 0 && header < 16) {
-                        send[header] = buffer; //Adds to the array to be played
-                        set.add((int) header); //Adds to the set
+                        int newHash = Arrays.hashCode(buffer);
+                        if((short) newHash == hash){
+                            send[header] = buffer; //Adds to the array to be played
+                            set.add((int) header); //Adds to the set
+                        }
+                        else{
+                            corrupted++;
+                        }
+                    }
+                    else{
+                        corruptedHeader++;
                     }
                     count++;
                 }
@@ -135,6 +150,7 @@ public class AudioReceiver implements Runnable {
                             if(num == 15){
                                 nullCount++;
                             }
+                            packetLossAmount += nullCount;
 
                             //System.out.println("packet loss amount " + nullCount);
                             if(nullCount > 3){
@@ -186,8 +202,8 @@ public class AudioReceiver implements Runnable {
 
 //    ***************************************************************************************************************************************************************************************************************
                             queue.add(send[i]);
-                            //System.out.println("Receiver " +  i  + ": " + Arrays.toString(send[i]));
-                            System.out.println("Receiver " +  i);
+                            System.out.println("Receiver " +  i  + ": " + Arrays.toString(send[i]));
+                            //System.out.println("Receiver " +  i);
                             ap.playBlock(sl.getAudio(send[i]));
                             if(blockNum>1){
                                 queue.remove();
@@ -204,24 +220,39 @@ public class AudioReceiver implements Runnable {
 
                         }
                     }
+
+                    if(blockNum == 100){
+                        break;
+                    }
+
                     send = temp;
-                    set.add((int) header); //Adds the new header to the set
-                    send[header] = buffer; //Adds the new packet to the array
+                    if(header >= 0 && header < 16) {
+                        set.add((int) header); //Adds the new header to the set
+                        send[header] = buffer; //Adds the new packet to the array
+                    }
+                    System.out.println("Corrupted Header: " + corruptedHeader);
+                    System.out.println("Corrupted Audio: " + corrupted);
+
                     count++;
                     blockNum++;
                     System.out.println("block count "  + blockNum);
                     System.out.println("\n");
-                }
 
+                }
 
 
             } catch (IOException e){
                 System.out.println("ERROR: TextReceiver: Some random IO error occured!");
                 e.printStackTrace();
             }
+
+
         }
         //Close the socket
         receiving_socket.close();
+        System.out.println("Packet Loss Amount: " + packetLossAmount);
+        System.out.println("Corrupted Header: " + corruptedHeader);
+        System.out.println("Corrupted Audio: " + corrupted);
         //***************************************************
     }
 }
