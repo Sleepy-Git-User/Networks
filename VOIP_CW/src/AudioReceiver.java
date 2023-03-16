@@ -204,9 +204,12 @@ public class AudioReceiver implements Runnable {
 
                         }
                     }
+
                     send = temp;
-                    set.add((int) header); //Adds the new header to the set
-                    send[header] = buffer; //Adds the new packet to the array
+                    if(header >= 0 && header < 16) {
+                        set.add((int) header); //Adds the new header to the set
+                        send[header] = buffer; //Adds the new packet to the array
+                    }
                     count++;
                     blockNum++;
                     System.out.println("block count "  + blockNum);
