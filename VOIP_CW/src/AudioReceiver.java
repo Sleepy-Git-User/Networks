@@ -69,6 +69,9 @@ public class AudioReceiver implements Runnable {
         byte[][] history = new byte[16][]; //Array to store the played packets
         HashSet<Integer> set = new HashSet<Integer>(); //Set to store the headers to check for duplicates
         HashMap<Integer, byte[]> hashmap = new HashMap<Integer, byte[]>(); //Hashmap to store the packets to be played later
+
+        int blockNum =0;
+        Queue<byte[]> queue = new LinkedList<>();
         while (running){
 
             try{
@@ -87,7 +90,7 @@ public class AudioReceiver implements Runnable {
                 //Gets header
                 short header = sl.getHeader(buffer);
 
-                System.out.println("Receiver " + (int) header);
+                //System.out.println("Receiver " + (int) header);
 
                 /*
                 If the header is 3 it signifies the start of a new packet
@@ -104,8 +107,10 @@ public class AudioReceiver implements Runnable {
                         continue;
                     }
 
-                    send[header] = buffer; //Adds to the array to be played
-                    set.add((int) header); //Adds to the set
+                    if(header >= 0 && header < 16) {
+                        send[header] = buffer; //Adds to the array to be played
+                        set.add((int) header); //Adds to the set
+                    }
                     count++;
                 }
 
@@ -115,43 +120,57 @@ public class AudioReceiver implements Runnable {
                     set.clear(); //Clears the set
                     for(int i=0; i<16; i++){ //Plays all the packets in the array
                         if (send[i] == null) {
+                            Stack<byte[]> tempStack = new Stack<>();
+                            for(byte[] b : queue){
+                                tempStack.push(b);
+                            }
                             int nullCount = 0;
                             int collectPacket = 0;
-                            int pivot = i-1;
                             int num = i;
 
                             while (send[num] == null && num< 15) {
                                 nullCount++;
                                 num++;
                             }
-
-                            byte[][] collectedP = new byte[nullCount][];
-                            while(nullCount != collectPacket){
-                                if(pivot == -15){
-                                    collectPacket = nullCount;
-                                }
-                                else if((pivot)>=0){ // in send
-                                    if(send[pivot] != null){
-                                        collectedP[collectPacket] = send[pivot];
-                                        collectPacket++;
-                                    }
-                                    pivot--;
-                                }
-                                else{ // in history
-                                    if(history[history.length+pivot] != null){
-                                        collectedP[collectPacket] = history[history.length+pivot];
-                                        collectPacket++;
-                                    }
-                                    pivot--;
-                                }
+                            if(num == 15){
+                                nullCount++;
                             }
-                            num = i;
-                            for(int b = collectedP.length-1; b >= 0; b--){
-                                if(collectedP[b] != null){
-                                    send[num] = collectedP[b];
+
+                            //System.out.println("packet loss amount " + nullCount);
+                            if(nullCount >= 2){
+                                //System.out.println(" Large packet loss count ");
+                                i = num;
+                            }
+                            else{
+                                byte[][] collectedP = new byte[nullCount][];
+                                while(nullCount != collectPacket){
+                                    if(blockNum == 0){
+                                        collectPacket = nullCount;
+                                    }
+                                    else{
+                                        if(!tempStack.empty()){
+                                            collectedP[collectPacket] = tempStack.pop();
+                                            collectPacket++;
+                                        }
+                                    }
+
+                                }
+                                num = i;
+                                for(int b = collectedP.length-1; b >= 0; b--){
+                                    if(collectedP[b] != null){
+                                        send[num] = collectedP[b];
+                                        queue.add(collectedP[b]);
+                                    }
                                     num++;
                                 }
+                                if(blockNum == 0){
+                                    i = 15;
+                                }
+                                else{
+                                    i = num-nullCount;
+                                }
                             }
+
                         }
 
 //                       System.out.println("Receiver " +  Arrays.toString(send[i]));
@@ -166,17 +185,21 @@ public class AudioReceiver implements Runnable {
                             //and this means we may lose i packets to look through but we only have to look through history
 
 //    ***************************************************************************************************************************************************************************************************************
-                                //System.out.println("Receiver: " + Arrays.toString(send[i]));
-                                ap.playBlock(sl.getAudio(send[i]));
-                               //Checks if the packet is in the hashmap if it is add it to the array
-
-                                if(hashmap.containsKey(i)){ //If the packet is in the hashmap remove it
-                                    temp[i] = hashmap.get(i);
-                                    set.add((int) sl.getHeader(hashmap.get(i)));
-                                    hashmap.remove(i);
-                                    count++; //Increment the count
-                                }
-                                else temp[i] = null;
+                            queue.add(send[i]);
+                            //System.out.println("Receiver " +  i  + ": " + Arrays.toString(send[i]));
+                            System.out.println("Receiver " +  i);
+                            ap.playBlock(sl.getAudio(send[i]));
+                            if(blockNum>1){
+                                queue.remove();
+                            }
+                            //Checks if the packet is in the hashmap if it is add it to the array
+                            if(hashmap.containsKey(i)){ //If the packet is in the hashmap remove it
+                                temp[i] = hashmap.get(i);
+                                set.add((int) sl.getHeader(hashmap.get(i)));
+                                hashmap.remove(i);
+                                count++; //Increment the count
+                            }
+                            else temp[i] = null;
 //                               send[i] = hashmap.get(i);
 
                         }
@@ -185,6 +208,9 @@ public class AudioReceiver implements Runnable {
                     set.add((int) header); //Adds the new header to the set
                     send[header] = buffer; //Adds the new packet to the array
                     count++;
+                    blockNum++;
+                    System.out.println("block count "  + blockNum);
+                    System.out.println("\n");
                 }
 
 
