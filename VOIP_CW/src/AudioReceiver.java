@@ -25,7 +25,7 @@ import uk.ac.uea.cmp.voip.DatagramSocket4;
 import javax.sound.sampled.LineUnavailableException;
 
 public class AudioReceiver implements Runnable {
-    static DatagramSocket4 receiving_socket;
+    static DatagramSocket receiving_socket;
     static AudioPlayer ap;
 
     static {
@@ -51,7 +51,7 @@ public class AudioReceiver implements Runnable {
 
         //DatagramSocket receiving_socket;
         try{
-            receiving_socket = new DatagramSocket4(PORT);
+            receiving_socket = new DatagramSocket(PORT);
         } catch (SocketException e){
             System.out.println("ERROR: TextReceiver: Could not open UDP socket to receive from.");
             e.printStackTrace();
@@ -114,12 +114,21 @@ public class AudioReceiver implements Runnable {
                     }
 
                     if(header >= 0 && header < 16) {
-                        int newHash = Arrays.hashCode(buffer);
-                        if((short) newHash == hash){
-                            send[header] = buffer; //Adds to the array to be played
-                            set.add((int) header); //Adds to the set
+                        send[header] = buffer; //Adds to the array to be played
+                        set.add((int) header); //Adds to the set
+                        //int newHash = Arrays.hashCode(buffer);
+                        int sum =0;
+                        for(byte b : buffer){
+                            sum +=b & 0xFF;
+                        }
+                        short newHash = (short)(sum % 65535);
+                        System.out.println(header + " Hash: " + hash);
+                        //System.out.println(header + " New Hash: " + newHash);
+                        if(newHash == hash){
+                            //System.out.println("Not Corrupted");
                         }
                         else{
+                            //System.out.println("Corrupted");
                             corrupted++;
                         }
                     }
@@ -221,7 +230,7 @@ public class AudioReceiver implements Runnable {
                         }
                     }
 
-                    if(blockNum == 100){
+                    if(blockNum == 20){
                         break;
                     }
 
@@ -230,8 +239,8 @@ public class AudioReceiver implements Runnable {
                         set.add((int) header); //Adds the new header to the set
                         send[header] = buffer; //Adds the new packet to the array
                     }
-                    System.out.println("Corrupted Header: " + corruptedHeader);
-                    System.out.println("Corrupted Audio: " + corrupted);
+                    //System.out.println("Corrupted Header: " + corruptedHeader);
+                    //System.out.println("Corrupted Audio: " + corrupted);
 
                     count++;
                     blockNum++;
