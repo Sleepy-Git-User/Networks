@@ -11,6 +11,7 @@ import java.net.*;
 import java.io.*;
 import java.util.*;
 import java.nio.ByteBuffer;
+import java.util.zip.CRC32;
 
 
 import CMPC3M06.AudioPlayer;
@@ -25,7 +26,7 @@ import uk.ac.uea.cmp.voip.DatagramSocket4;
 import javax.sound.sampled.LineUnavailableException;
 
 public class AudioReceiver implements Runnable {
-    static DatagramSocket receiving_socket;
+    static DatagramSocket4 receiving_socket;
     static AudioPlayer ap;
 
     static {
@@ -51,7 +52,7 @@ public class AudioReceiver implements Runnable {
 
         //DatagramSocket receiving_socket;
         try{
-            receiving_socket = new DatagramSocket(PORT);
+            receiving_socket = new DatagramSocket4(PORT);
         } catch (SocketException e){
             System.out.println("ERROR: TextReceiver: Could not open UDP socket to receive from.");
             e.printStackTrace();
@@ -114,17 +115,21 @@ public class AudioReceiver implements Runnable {
                     }
 
                     if(header >= 0 && header < 16) {
-                        send[header] = buffer; //Adds to the array to be played
-                        set.add((int) header); //Adds to the set
+
                         //int newHash = Arrays.hashCode(buffer);
                         int sum =0;
-                        for(byte b : buffer){
+                        for(byte b : sl.getAudio(buffer)){
                             sum +=b & 0xFF;
                         }
                         short newHash = (short)(sum % 65535);
-                        System.out.println(header + " Hash: " + hash);
+//                        CRC32 crc = new CRC32();
+//                        crc.update(sl.getAudio(buffer));
+//                        short newHash = (short) crc.getValue();
+                        //System.out.println(header + " Hash: " + hash);
                         //System.out.println(header + " New Hash: " + newHash);
                         if(newHash == hash){
+                            send[header] = buffer; //Adds to the array to be played
+                            set.add((int) header); //Adds to the set
                             //System.out.println("Not Corrupted");
                         }
                         else{
@@ -230,7 +235,7 @@ public class AudioReceiver implements Runnable {
                         }
                     }
 
-                    if(blockNum == 20){
+                    if(blockNum == 256){
                         break;
                     }
 
