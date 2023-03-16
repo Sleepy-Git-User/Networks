@@ -137,7 +137,7 @@ public class AudioReceiver implements Runnable {
                             }
 
                             //System.out.println("packet loss amount " + nullCount);
-                            if(nullCount > 3){
+                            if(nullCount >= 2){
                                 //System.out.println(" Large packet loss count ");
                                 i = num;
                             }
