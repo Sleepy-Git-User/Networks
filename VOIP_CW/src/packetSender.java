@@ -1,5 +1,3 @@
-
-
 import java.net.*;
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -8,13 +6,17 @@ public class packetSender {
     static DatagramSocket sending_socket;
     protected InetAddress clientIP;
     protected int PORT;
-    protected sequenceLayer sl;
 
-    public packetSender(InetAddress clientIP, int PORT) throws IOException {
+
+    public packetSender(InetAddress clientIP, int PORT) throws SocketException {
         this.clientIP = clientIP;
         this.PORT = PORT;
-        sl = new sequenceLayer();
+    }
 
+    public ByteBuffer add(ByteBuffer data, int counter){
+        ByteBuffer bb = ByteBuffer.allocate(data.capacity()+2);
+        bb.putShort((short) counter);
+        return bb;
     }
 
     public void send(ByteBuffer data) throws IOException {
