@@ -6,23 +6,31 @@
  *
  * @author  abj
  */
+import java.math.BigInteger;
 import java.net.*;
 import java.io.*;
-import java.nio.ByteBuffer;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.util.Arrays;
+import java.util.zip.CRC32;
+
 
 import CMPC3M06.AudioPlayer;
 import CMPC3M06.AudioRecorder;
+import SecurityLayer.RSAEncryptDecrypt;
+import SecurityLayer.xor;
 import uk.ac.uea.cmp.voip.DatagramSocket2;
 import uk.ac.uea.cmp.voip.DatagramSocket3;
 import uk.ac.uea.cmp.voip.DatagramSocket4;
 
 
 import javax.sound.sampled.LineUnavailableException;
-import javax.xml.crypto.Data;
+
+
 
 public class AudioSender implements Runnable{
 
-    static DatagramSocket sending_socket;
+    static DatagramSocket4 sending_socket;
     static AudioRecorder ar;
 
     static {
@@ -59,7 +67,7 @@ public class AudioSender implements Runnable{
 
         //DatagramSocket sending_socket;
         try{
-            sending_socket = new DatagramSocket();
+            sending_socket = new DatagramSocket4();
         } catch (SocketException e){
             System.out.println("ERROR: TextSender: Could not open UDP socket to send from.");
             e.printStackTrace();
@@ -77,45 +85,62 @@ public class AudioSender implements Runnable{
         //Main loop.
 
         boolean running = true;
-        DatagramPacket[] matrix = new DatagramPacket[16];
+        byte[][] matrix = new byte[16][];
         int count = 0;
+
+        sequenceLayer sl = new sequenceLayer();
+
+
+        fileWriter fs = new fileWriter("sender.txt");
+
+
         while (running){
             try{
 
                 byte[] audio = ar.getBlock();
+                //int hash = Arrays.hashCode(audio);
+                int sum =0;
+                for(byte b : audio){
+                    sum +=b & 0xFF;
+                }
+                short hash = (short)(sum % 65535);
+//                CRC32 crc = new CRC32();
+//                crc.update(audio);
+//                short hash = (short) crc.getValue();
+                //System.out.println(count + " Before Hash: " + hash);
+                byte[] buffer = sl.add(hash, count, audio);
 
-                //Creates a ByteBuffer object called bb. With 2 bytes for the header and the length of the audio allocated in size.
-                ByteBuffer bb = ByteBuffer.allocate(2+audio.length);
-                //Slapped a value of 3 in to the bb array. As a short.
-                bb.putShort((short) 3);
-                //Slapped the audio byte array in to bb after the header.
-                bb.put(audio);
-
+//                System.out.println("Sender " + count +" = "+ Arrays.toString(buffer));
                 //Stores the bb.array in to buffer ready to be sent off.
-                byte[] buffer = bb.array();
 
                 //Make a DatagramPacket from it, with client address and port number
-                DatagramPacket packet = new DatagramPacket(buffer, buffer.length, clientIP, PORT);
 
-//                matrix[count] = packet;
-//                DatagramPacket[] sorted = new DatagramPacket[packet.getLength()];
-//                count++;
-//                if(count == 16){
-//                    for (int i = 0; i < 4; i++) {
-//                        for (int j = 0; j <4; j++) {
-//                            sorted[4 * (3 - j) + i] = matrix[4 * i + j];
-//                        }
-//                    }
-//                    for (int i = 0; i < 16; i++) {
-//                        sending_socket.send(sorted[i]);
-//                    }
-//                    count = 0;
-//                }
-                //This is where interleaving and packet structure will be implemented
+
+                matrix[count] = buffer;
+                count++;
+                if(count == 16){
+                    byte[][] sorted = sl.rotateLeft(matrix);
+                    for (int i = 0; i < 16; i++) {
+                        short header = sl.getHeader(sorted[i]);
+                        sorted[i] = sl.addTime(sorted[i]);
+                        fs.writeLine(header + ","+ sl.getTime(sorted[i]));
+
+                        byte[] ciphertext = xor.encrypt(sorted[i], rsaSender.xorKey);
+                        sorted[i] = ciphertext;
+
+                        sending_socket.send(new DatagramPacket(sorted[i], sorted[i].length, clientIP, PORT));
+                    }
+                    count = 0;
+
+                    matrix = new byte[16][];
+
+                }
+
+
+
 
 
                 //Send it
-                sending_socket.send(packet);
 
                 //The user can type EXIT to quit
                 /*
