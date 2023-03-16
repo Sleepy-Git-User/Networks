@@ -21,7 +21,7 @@ public class rsaSender implements Runnable{
     public static boolean AmImissingThierKey = true;
     public static byte[] xorKey;
     public static short priority;
-    public static boolean haveXor;
+    public static boolean haveXor = true;
     public static boolean finished;
 
 
@@ -83,7 +83,7 @@ public class rsaSender implements Runnable{
                 if (rsaReceiver.haveTheirKeys){
                     ByteBuffer bb = ByteBuffer.allocate(512);
                     bb.putShort((short) 3);
-                    byte[] ciphertext = xor.encrypt(priority, rsaSender.xorKey);
+                    //byte[] ciphertext = xor.encrypt(priority, rsaSender.xorKey);
                     BigInteger Encrypted = RSAEncryptDecrypt.encrypt(Mykeys.getPublicKey(),rsaReceiver.theirKeys.getPublicKey(),rsaReceiver.theirKeys.getModulus());
                     bb.put(String.valueOf(Encrypted).getBytes(StandardCharsets.UTF_8));
                     PS.send(bb);
