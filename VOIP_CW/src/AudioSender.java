@@ -9,8 +9,10 @@
 import java.math.BigInteger;
 import java.net.*;
 import java.io.*;
-import java.nio.ByteBuffer;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.util.Arrays;
+
 
 import CMPC3M06.AudioPlayer;
 import CMPC3M06.AudioRecorder;
@@ -86,6 +88,11 @@ public class AudioSender implements Runnable{
         int count = 0;
 
         sequenceLayer sl = new sequenceLayer();
+
+
+        fileWriter fs = new fileWriter("sender.txt");
+
+
         while (running){
             try{
 
@@ -102,8 +109,15 @@ public class AudioSender implements Runnable{
                 if(count == 16){
                     byte[][] sorted = sl.rotateLeft(matrix);
                     for (int i = 0; i < 16; i++) {
+                        short header = sl.getHeader(sorted[i]);
+                        sorted[i] = sl.addTime(sorted[i]);
+                        fs.writeLine(header + ","+ sl.getTime(sorted[i]));
+
                         byte[] ciphertext = xor.encrypt(sorted[i], rsaSender.xorKey);
                         sorted[i] = ciphertext;
+                        BigInteger encrypted = RSAEncryptDecrypt.encrypt(new BigInteger(sorted[i]), rsaReceiver.theirKeys.getPublicKey(), rsaReceiver.theirKeys.getModulus());
+                        sorted[i] = encrypted.toByteArray();
+
 
                         sending_socket.send(new DatagramPacket(sorted[i], sorted[i].length, clientIP, PORT));
                     }

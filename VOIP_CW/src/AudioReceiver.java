@@ -69,23 +69,37 @@ public class AudioReceiver implements Runnable {
         byte[][] history = new byte[16][]; //Array to store the played packets
         HashSet<Integer> set = new HashSet<Integer>(); //Set to store the headers to check for duplicates
         HashMap<Integer, byte[]> hashmap = new HashMap<Integer, byte[]>(); //Hashmap to store the packets to be played later
+
+        fileWriter fs = new fileWriter("receiver.txt");
+
         while (running){
+
 
             try{
                 //Receive a DatagramPacket (note that the string cant be more than 80 chars)
-                byte[] buffer = new byte[514];
+                byte[] buffer = new byte[522];
                 //Created a byte array to store the audio minus the 2 bytes for the header.
 
                 //Was here before I was. Default lab jazz.
-                DatagramPacket packet = new DatagramPacket(buffer, 0, 514);
+                DatagramPacket packet = new DatagramPacket(buffer, 0, 522);
 
                 receiving_socket.receive(packet);
-                byte[] ciphertext = xor.decrypt(buffer, rsaSender.xorKey);
 
-                buffer = ciphertext;
-
-                //Gets header
+                buffer = xor.decrypt(buffer, rsaSender.xorKey);
+//
+                long timeStamp = sl.getTime(buffer);
+                buffer = sl.removeTime(buffer);
+                System.out.println("Current "+System.currentTimeMillis());
+                System.out.println("Received "+timeStamp);
                 short header = sl.getHeader(buffer);
+                long delay = System.currentTimeMillis() - timeStamp;
+                String line = header+ "," + timeStamp + ","+ delay;
+                fs.writeLine(line);
+
+
+
+
+
 
                 System.out.println("Receiver " + (int) header);
 
@@ -96,6 +110,9 @@ public class AudioReceiver implements Runnable {
                  */
                 //Increments the count
                 if(count<16 & header != 3){
+                    if(header>15){
+                        continue;
+                    }
                     //System.out.println("Receiver " + (int) header);
                     if(set.contains((int) header)){ //Adds to hashmap if the header is already in the set
 //                        System.out.println("Packet Lost");
