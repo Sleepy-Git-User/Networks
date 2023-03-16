@@ -16,6 +16,7 @@ import java.nio.ByteBuffer;
 import CMPC3M06.AudioPlayer;
 import CMPC3M06.AudioRecorder;
 import SecurityLayer.RSAEncryptDecrypt;
+import SecurityLayer.xor;
 import uk.ac.uea.cmp.voip.DatagramSocket2;
 import uk.ac.uea.cmp.voip.DatagramSocket3;
 import uk.ac.uea.cmp.voip.DatagramSocket4;
@@ -79,10 +80,9 @@ public class AudioReceiver implements Runnable {
                 DatagramPacket packet = new DatagramPacket(buffer, 0, 514);
 
                 receiving_socket.receive(packet);
+                byte[] ciphertext = xor.decrypt(buffer, rsaSender.xorKey);
 
-                BigInteger decrypt = RSAEncryptDecrypt.decrypt(new BigInteger(buffer), rsaSender.Mykeys.getPrivateKey(), rsaSender.Mykeys.getModulus());
-
-                buffer = decrypt.toByteArray();
+                buffer = ciphertext;
 
                 System.out.println(buffer);
                 //Gets header

@@ -17,7 +17,7 @@ import java.nio.ByteBuffer;
 public class rsaReceiver implements Runnable{
 
    public static Keys theirKeys;
-   public static boolean haveKeys = false;
+   public static boolean haveTheirKeys = false;
 
     static DatagramSocket receiving_socket;
 
@@ -56,59 +56,51 @@ public class rsaReceiver implements Runnable{
                 byte[] buffer = new byte[512];
 
                 //Payload will store the public key.
-                byte[] publicKey = new byte[510];
+                byte[] payload = new byte[510];
                 DatagramPacket packet = new DatagramPacket(buffer, 0, buffer.length);
 
                 receiving_socket.receive(packet);
-                // This trims the buffer of the unused bytes at the end
-                byte[] filterdBuffer = new String(buffer).trim().getBytes();
 
                 // Creates a ByteBuffer object and allocates it to the size of buffer.
                 ByteBuffer bb = ByteBuffer.wrap(buffer);
                 // Grabs the short value from the front of the byte array
                 short header = bb.getShort(0);
 
-                //***************************************************
 
                 //***************************************************
 
-                // If we have their keys AND we have confirmation they have our keys then this run to confirm we do infact have eachothers keys.
-                if (rsaSender.TheyHaveKeys && haveKeys){
-                    // This gets the Public Key
-                    bb.get(publicKey);
-                    // Converts the publicKey in to a string.
-                    String str = new String(publicKey);
-                    // This will decrypt the encrypted exponent part of their public key, which they encrypted using our public key.
-                    BigInteger Decrypted = RSAEncryptDecrypt.decrypt(new BigInteger(str.substring(2,509).trim()),rsaSender.Mykeys.getPrivateKey(),rsaSender.Mykeys.getModulus());
-                    //System.out.println(Decrypted);
-
-                    // If the Decypted value is the same as their public key then we know we both have eachothers keys and we can now end the loop and goto the voip system.
-                    if (Decrypted.equals(theirKeys.getPublicKey())){
-                        System.out.println("We both have confirmed we have eachothers keys. RSA DONE");
-                        rsaSender.dontHaveKeys = false;
-                        running = false;
-                    }
+                //***************************************************
+                switch (header) {
+                    case 0: // We get a packet with a public key in it
+                        bb.get(payload);
+                        String str = new String(payload);
+                        // This makes a new key object which will store the received keys.
+                        theirKeys = new Keys(new BigInteger("0"), new BigInteger("65537"),new BigInteger(str.substring(2,509).trim()));
+                        haveTheirKeys = true;
+                        System.out.println("Got their keys");
+                        break;
+                    case 1:
+                        if (!rsaSender.acknowledgement){
+                            bb.get(payload); // Gets the payload
+                            String EncryptedAcknowledgement = new String(payload); // Converts the payload to string
+                            BigInteger Decrypted = RSAEncryptDecrypt.decrypt(new BigInteger(EncryptedAcknowledgement.substring(2,509).trim()),rsaSender.Mykeys.getPrivateKey(),rsaSender.Mykeys.getModulus());
+                            System.out.println("Got a message to decrypt");
+                            // If the Decypted value is the same as their public key then we know we both have eachothers keys and we can now end the loop and goto the voip system.
+                            if (Decrypted.equals(theirKeys.getPublicKey())){
+                                rsaSender.acknowledgement = true;
+                                rsaSender.finished = true;
+                                running = false;
+                                System.out.println("Done I think");
+                            }
+                        }
+                        break;
+                    case 2:
+                        // code to execute if header is 2
+                        break;
+                    default:
+                        // code to execute if header is none of the above values
+                        break;
                 }
-
-                //***************************************************
-
-                //***************************************************
-
-                // The header is set to 6 to say that they recieved our public key, and we can move on to confirming this.
-                if (header == 6){
-                    rsaSender.TheyHaveKeys = true;
-                    System.out.println("They got our Keys");
-                }
-                // The header is set to 5 when communication first begins, this is to let the reciever know that the packet contains a public key.
-                if (header == 5){
-                    System.out.println("We got their public Key");
-                    bb.get(publicKey);
-                    String str = new String(publicKey);
-                    // This makes a new key object which will store the recieved keys.
-                    theirKeys = new Keys(new BigInteger("0"), new BigInteger("65537"),new BigInteger(str.substring(2,509).trim()));
-                    haveKeys = true;
-
-            }
         } catch (IOException e) {
                 e.printStackTrace();
             }

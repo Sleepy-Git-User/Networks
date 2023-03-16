@@ -1,4 +1,4 @@
-import jdk.incubator.foreign.SequenceLayout;
+
 
 import java.net.*;
 import java.io.*;
@@ -14,11 +14,11 @@ public class packetSender {
         this.clientIP = clientIP;
         this.PORT = PORT;
         sl = new sequenceLayer();
-        sending_socket = new DatagramSocket();
+
     }
 
     public void send(ByteBuffer data) throws IOException {
-
+        sending_socket = new DatagramSocket();
         //DatagramSocket sending_socket;
         try{
             if(data.hasArray()){
