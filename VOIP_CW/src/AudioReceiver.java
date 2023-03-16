@@ -84,6 +84,8 @@ public class AudioReceiver implements Runnable {
 
                 buffer = ciphertext;
 
+                // Signing shit here
+                // to here
                 //Gets header
                 short header = sl.getHeader(buffer);
 

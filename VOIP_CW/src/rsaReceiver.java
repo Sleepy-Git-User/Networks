@@ -97,6 +97,9 @@ public class rsaReceiver implements Runnable{
                     case 2:
                         // code to execute if header is 2
                         break;
+                    case 3:
+                        // code to execute if header is 3
+                        break;
                     default:
                         // code to execute if header is none of the above values
                         break;
