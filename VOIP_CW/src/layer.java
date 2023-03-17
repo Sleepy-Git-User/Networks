@@ -70,71 +70,7 @@ class layer {
         return bb.getShort();
     }
 
-    int playAudio(Queue<byte[]> queue, byte[][] send, int blockNum, int i, sequenceLayer sl) throws IOException {
-        //Play packet
-        queue.add(send[i]);
-        //System.out.println("...");
-        System.out.println("Receiver " +  i  + ": " + Arrays.toString(send[i]));
-        AudioReceiver.ap.playBlock(sl.getAudio(send[i]));
-        if(blockNum>1){
-            queue.remove();
-        }
-        return i;
-    }
 
-    int compensation(Queue<byte[]> queue, byte[][] send, int blockNum, int i, boolean comp) {
-        Stack<byte[]> tempStack = new Stack<>();
-        for (byte[] b : queue) {
-            tempStack.push(b);
-        }
-        int nullCount = 0;
-        int collectPacket = 0;
-        int num = i;
-
-        while (send[num] == null && num < 15) {
-            nullCount++;
-            num++;
-        }
-        if (num == 15) {
-            nullCount++;
-        }
-
-
-        //System.out.println("packet loss amount " + nullCount);
-        if(!comp || nullCount >= 2){
-            i = num;
-        }
-        if(comp || nullCount > 3) { // large amount of packet loss
-            i = num;
-        } else { // repeat previous packets
-            byte[][] collectedP = new byte[nullCount][];
-            while (nullCount != collectPacket) {
-                if (blockNum == 0) { // first empty block
-                    collectPacket = nullCount;
-                } else {
-                    if (!tempStack.empty()) {
-                        collectedP[collectPacket] = tempStack.pop();
-                        collectPacket++;
-                    }
-                }
-
-            }
-            num = i;
-            for (int b = collectedP.length - 1; b >= 0; b--) { // adding in previous packets
-                if (collectedP[b] != null) {
-                    send[num] = collectedP[b];
-                    queue.add(collectedP[b]);
-                }
-                num++;
-            }
-            if (blockNum == 0) { // first empty block
-                i = 15;
-            } else {
-                i = num - nullCount;
-            }
-        }
-        return i;
-    }
 
 
 }

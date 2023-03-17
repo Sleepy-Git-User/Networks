@@ -70,6 +70,7 @@ public class AudioReceiver implements Runnable {
         HashSet<Integer> set = new HashSet<Integer>(); //Set to store the headers to check for duplicates
         HashMap<Integer, byte[]> hashmap = new HashMap<Integer, byte[]>(); //Hashmap to store the packets to be played later
         fileWriter fs = new fileWriter("receiver.txt");
+        compensation comp = new compensation();
 
         // for testing packet loss/corruption
         int blockNum = 0;
@@ -141,15 +142,16 @@ public class AudioReceiver implements Runnable {
                     for(int i=0; i<16; i++){ //Plays all the packets in the array
                         if (send[i] == null) {
                             if(DS == 0 || DS == 3 || DS == 4){
-                                i = sl.compensation(queue, send, blockNum, i, true); // repeating packets
+                                i = comp.compensation(queue, send, blockNum, i, true); // repeating packets
+
                             }
                             else if(DS == 2){
-                                i = sl.compensation(queue, send, blockNum, i, false); // repeating packets
+                                i = comp.compensation(queue, send, blockNum, i, false); // repeating packets
                             }
 
                         }
                         if (send[i] != null) {
-                           i = sl.playAudio(queue, send, blockNum, i, sl); // playing audio
+                           i = comp.playAudio(queue, send, blockNum, i, sl); // playing audio
                             //Checks if the packet is in the hashmap if it is add it to the array
                             if(hashmap.containsKey(i)){ //If the packet is in the hashmap remove it
                                 temp[i] = hashmap.get(i);
