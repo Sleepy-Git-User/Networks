@@ -25,6 +25,7 @@ import uk.ac.uea.cmp.voip.DatagramSocket4;
 import javax.sound.sampled.LineUnavailableException;
 
 public class AudioReceiver implements Runnable {
+    static int DS = 4;
     static DatagramSocket4 receiving_socket;
     static AudioPlayer ap;
 
@@ -139,7 +140,13 @@ public class AudioReceiver implements Runnable {
 
                     for(int i=0; i<16; i++){ //Plays all the packets in the array
                         if (send[i] == null) {
-                            i = sl.repetition(queue, send, blockNum, i); // repeating packets
+                            if(DS == 0 || DS == 3 || DS == 4){
+                                i = sl.compensation(queue, send, blockNum, i, true); // repeating packets
+                            }
+                            else if(DS == 2){
+                                i = sl.compensation(queue, send, blockNum, i, false); // repeating packets
+                            }
+
                         }
                         if (send[i] != null) {
                            i = sl.playAudio(queue, send, blockNum, i, sl); // playing audio

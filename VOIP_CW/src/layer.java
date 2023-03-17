@@ -82,7 +82,7 @@ class layer {
         return i;
     }
 
-    int repetition(Queue<byte[]> queue, byte[][] send, int blockNum, int i) {
+    int compensation(Queue<byte[]> queue, byte[][] send, int blockNum, int i, boolean comp) {
         Stack<byte[]> tempStack = new Stack<>();
         for (byte[] b : queue) {
             tempStack.push(b);
@@ -101,7 +101,10 @@ class layer {
 
 
         //System.out.println("packet loss amount " + nullCount);
-        if (nullCount > 3) { // large amount of packet loss
+        if(!comp || nullCount >= 2){
+            i = num;
+        }
+        if(comp || nullCount > 3) { // large amount of packet loss
             i = num;
         } else { // repeat previous packets
             byte[][] collectedP = new byte[nullCount][];
