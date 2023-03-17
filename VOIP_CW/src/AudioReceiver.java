@@ -25,8 +25,8 @@ import uk.ac.uea.cmp.voip.DatagramSocket4;
 import javax.sound.sampled.LineUnavailableException;
 
 public class AudioReceiver implements Runnable {
-    static int DS = 4;
-    static DatagramSocket4 receiving_socket;
+    static int DS = 2;
+    static DatagramSocket2 receiving_socket;
     static AudioPlayer ap;
 
     static {
@@ -52,7 +52,7 @@ public class AudioReceiver implements Runnable {
 
         //DatagramSocket receiving_socket;
         try{
-            receiving_socket = new DatagramSocket4(PORT);
+            receiving_socket = new DatagramSocket2(PORT);
         } catch (SocketException e){
             System.out.println("ERROR: TextReceiver: Could not open UDP socket to receive from.");
             e.printStackTrace();
@@ -172,7 +172,7 @@ public class AudioReceiver implements Runnable {
 
                     count++;
                     blockNum++;
-//                    System.out.println("block count "  + blockNum);
+                    System.out.println("block count "  + blockNum + "\n");
 
                 }
 
