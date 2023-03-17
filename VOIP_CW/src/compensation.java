@@ -12,10 +12,10 @@ public class compensation {
         int num = count[1];
         int nullCount = count[0];
 
-        if(!comp || nullCount >= 2){
+        if(!comp && nullCount >= 2){
             i = num;
         }
-        if(comp || nullCount > 3) { // large amount of packet loss
+        if(comp && nullCount > 3) { // large amount of packet loss
             i = num;
         } else { // repeat previous packets
             byte[][] collectedP = getPreviousPackets(tempStack, send, i, nullCount, blockNum);
