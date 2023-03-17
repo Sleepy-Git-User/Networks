@@ -71,8 +71,6 @@ public class AudioReceiver implements Runnable {
         fileWriter fs = new fileWriter("receiver.txt");
 
         // for testing packet loss/corruption
-        int packetLossAmount = -16;
-
         int blockNum = 0;
         Queue<byte[]> queue = new LinkedList<>(); // compensation
 
@@ -154,7 +152,7 @@ public class AudioReceiver implements Runnable {
                             if(num == 15){
                                 nullCount++;
                             }
-                            packetLossAmount += nullCount;
+
 
                             //System.out.println("packet loss amount " + nullCount);
                             if(nullCount > 3){ // large amount of packet loss
