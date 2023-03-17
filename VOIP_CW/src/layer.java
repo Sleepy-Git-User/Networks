@@ -52,6 +52,15 @@ class layer {
         bb.getShort();
         return bb.getShort();
     }
+
+    short hash(byte[] audio){
+        int sum =0;
+        for(byte b : audio){
+            sum +=b & 0xFF;
+        }
+        return (short)(sum % 65535);
+    }
+
     short getHash(byte[] audio){
         ByteBuffer bb = ByteBuffer.wrap(audio);
         return bb.getShort();

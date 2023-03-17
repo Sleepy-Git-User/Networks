@@ -89,8 +89,6 @@ public class AudioSender implements Runnable{
         int count = 0;
 
         sequenceLayer sl = new sequenceLayer();
-
-
         fileWriter fs = new fileWriter("sender.txt");
 
 
@@ -99,21 +97,8 @@ public class AudioSender implements Runnable{
 
                 byte[] audio = ar.getBlock();
                 //int hash = Arrays.hashCode(audio);
-                int sum =0;
-                for(byte b : audio){
-                    sum +=b & 0xFF;
-                }
-                short hash = (short)(sum % 65535);
-//                CRC32 crc = new CRC32();
-//                crc.update(audio);
-//                short hash = (short) crc.getValue();
-                //System.out.println(count + " Before Hash: " + hash);
+                short hash = sl.hash(audio);
                 byte[] buffer = sl.add(hash, count, audio);
-
-//                System.out.println("Sender " + count +" = "+ Arrays.toString(buffer));
-                //Stores the bb.array in to buffer ready to be sent off.
-
-                //Make a DatagramPacket from it, with client address and port number
 
 
                 matrix[count] = buffer;
@@ -121,10 +106,8 @@ public class AudioSender implements Runnable{
                 if(count == 16){
                     byte[][] sorted = sl.rotateLeft(matrix);
                     for (int i = 0; i < 16; i++) {
-                        short header = sl.getHeader(sorted[i]);
                         sorted[i] = sl.addTime(sorted[i]);
-                        fs.writeLine(header + ","+ sl.getTime(sorted[i]));
-
+                        fs.writeLine(sl.getHeader(sorted[i]) + ","+ sl.getTime(sorted[i]));
                         byte[] ciphertext = xor.encrypt(sorted[i], rsaSender.xorKey);
                         sorted[i] = ciphertext;
 
@@ -135,18 +118,6 @@ public class AudioSender implements Runnable{
                     matrix = new byte[16][];
 
                 }
-
-
-
-
-
-                //Send it
-
-                //The user can type EXIT to quit
-                /*
-                if (str.equals("EXIT")){
-                    running=false;
-                }*/
 
             } catch (IOException e){
                 System.out.println("ERROR: TextSender: Some random IO error occured!");

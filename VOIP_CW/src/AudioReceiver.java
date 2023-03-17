@@ -68,13 +68,10 @@ public class AudioReceiver implements Runnable {
         byte[][] send = new byte[16][]; //Array play packets
         HashSet<Integer> set = new HashSet<Integer>(); //Set to store the headers to check for duplicates
         HashMap<Integer, byte[]> hashmap = new HashMap<Integer, byte[]>(); //Hashmap to store the packets to be played later
-
         fileWriter fs = new fileWriter("receiver.txt");
 
         // for testing packet loss/corruption
         int packetLossAmount = -16;
-        int corruptedHeader = 0;
-        int corrupted = 0;
 
         int blockNum = 0;
         Queue<byte[]> queue = new LinkedList<>(); // compensation
@@ -127,23 +124,12 @@ public class AudioReceiver implements Runnable {
 
                     if(header >= 0 && header < 16) {
 
-                        int sum = 0;
-                        for(byte b : sl.getAudio(buffer)){
-                            sum +=b & 0xFF; // signed byte to unsigned int
-                        }
-                        short newHash = (short)(sum % 65535); // checking size to case not max value of short
-
+                        short newHash = sl.hash(sl.getAudio(buffer)); // checking size to case not max value of short
                         if(newHash == hash){
                             send[header] = buffer; //Adds to the array to be played
                             set.add((int) header); //Adds to the set
                         }
-//                        else{
-//                            corrupted++;
-//                        }
                     }
-//                    else{
-//                        corruptedHeader++;
-//                    }
                     count++;
                 }
 

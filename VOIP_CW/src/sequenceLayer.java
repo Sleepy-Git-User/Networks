@@ -15,7 +15,6 @@ class sequenceLayer extends layer {
         return bb.array();
     }
 
-
     byte[] getAudio(byte[] audio){
         byte[] audio2 = new byte[audio.length-4];
         ByteBuffer bb = ByteBuffer.wrap(audio);
@@ -33,8 +32,6 @@ class sequenceLayer extends layer {
                 
             }
         }
-
-
         return left;
     }
 }
