@@ -12,23 +12,44 @@ public class compensation {
         int num = count[1];
         int nullCount = count[0];
 
-        if(!comp && nullCount >= 2){
-            i = num;
-        }
-        if(comp && nullCount > 3) { // large amount of packet loss
-            i = num;
-        } else { // repeat previous packets
-            byte[][] collectedP = getPreviousPackets(tempStack, send, i, nullCount, blockNum);
-            num = i;
+//        if(!comp && nullCount >= 2){
+//            i = num;
+//        }
+        if(!comp){
+            if(nullCount >= 2){
+                i = num;
+            }
+            else { // repeat previous packets
+                byte[][] collectedP = getPreviousPackets(tempStack, send, i, nullCount, blockNum);
+                num = i;
 
-            num = addPreviousPackets(send, num, queue, collectedP);
+                num = addPreviousPackets(send, num, queue, collectedP);
 
-            if (blockNum == 0) { // first empty block
-                i = 15;
-            } else {
-                i = num - nullCount;
+                if (blockNum == 0) { // first empty block
+                    i = 15;
+                } else {
+                    i = num - nullCount;
+                }
             }
         }
+        if(comp){
+            if(nullCount > 3) { // large amount of packet loss // comp &&
+                i = num;
+            }
+            else { // repeat previous packets
+                byte[][] collectedP = getPreviousPackets(tempStack, send, i, nullCount, blockNum);
+                num = i;
+
+                num = addPreviousPackets(send, num, queue, collectedP);
+
+                if (blockNum == 0) { // first empty block
+                    i = 15;
+                } else {
+                    i = num - nullCount;
+                }
+            }
+        }
+
         return i;
     }
 
