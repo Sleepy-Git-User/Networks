@@ -102,7 +102,7 @@ public class AudioReceiver implements Runnable {
                 short hash = sl.getHash(buffer);
                 short header = sl.getHeader(buffer);
                 long delay = System.currentTimeMillis() - timeStamp;
-                String line = header+ "," + timeStamp + ","+ delay;
+                String line = header+ "\t" + timeStamp + "\t"+ delay;
                 fs.writeLine(line);
 
 

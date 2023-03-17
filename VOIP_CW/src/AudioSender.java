@@ -108,7 +108,7 @@ public class AudioSender implements Runnable{
                     for (int i = 0; i < 16; i++) {
                         short header = sl.getHeader(sorted[i]);
                         sorted[i] = sl.addTime(sorted[i]);
-                        fs.writeLine(header + ","+ sl.getTime(sorted[i]));
+                        fs.writeLine(header + "\t"+ sl.getTime(sorted[i]));
                         byte[] ciphertext = xor.encrypt(sorted[i], rsaSender.xorKey);
                         sorted[i] = ciphertext;
 
