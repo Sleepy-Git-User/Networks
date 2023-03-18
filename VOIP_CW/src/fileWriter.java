@@ -5,7 +5,7 @@ public class fileWriter {
 
     public fileWriter(String filename){
         try{
-            this.file = new File("C:\\Program Files\\GitHub\\Networks\\ measurements\\"+filename);
+            this.file = new File("C:\\Program Files\\GitHub\\Networks\\measurements\\"+filename);
             FileWriter fileWriter = new FileWriter(file, false);
             fileWriter.write("");
             fileWriter.close();
