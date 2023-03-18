@@ -1,7 +1,7 @@
 dataPoints = 112;
 
-[senderData] = ReadDataFromFile("sender.txt", dataPoints, 2);
-[receiverData] = ReadDataFromFile("receiver.txt", dataPoints, 3);
+[senderData] = ReadDataFromFile(".\measurements\sender.txt", dataPoints, 2);
+[receiverData] = ReadDataFromFile(".\measurements\receiver.txt", dataPoints, 3);
 
 instances = linspace(1, 112, 112);
 instances = transpose(instances);
