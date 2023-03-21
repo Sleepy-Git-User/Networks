@@ -79,7 +79,6 @@ public class AudioReceiver implements Runnable {
 
         while (running){
 
-
             try{
                 //Receive a DatagramPacket (note that the string cant be more than 80 chars)
                 byte[] buffer = new byte[524];
@@ -118,7 +117,7 @@ public class AudioReceiver implements Runnable {
                 //Increments the count
 
                     if (count < 16 & header != 3) {
-                        //if(count<16){
+//                    if(count<16){
                         if (header > 15) {
                             continue;
                         }
