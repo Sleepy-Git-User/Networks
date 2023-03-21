@@ -88,22 +88,25 @@ public class AudioReceiver implements Runnable {
 
                 receiving_socket.receive(packet);
 
+                if(encrypt) {
 
-                byte[] ciphertext = xor.decrypt(buffer, rsaSender.xorKey);
 
-                buffer = ciphertext;
+                    byte[] ciphertext = xor.decrypt(buffer, rsaSender.xorKey);
 
-                long timeStamp = sl.getTime(buffer);
-                buffer = sl.removeTime(buffer);
-//                System.out.println("Current "+System.currentTimeMillis());
-//                System.out.println("Received "+timeStamp);
-                //Gets header
+                    buffer = ciphertext;
 
-                short hash = sl.getHash(buffer);
-                short header = sl.getHeader(buffer);
-                long delay = System.currentTimeMillis() - timeStamp;
-                String line = header+ "\t" + timeStamp + "\t"+ delay;
-                fs.writeLine(line);
+                    long timeStamp = sl.getTime(buffer);
+                    buffer = sl.removeTime(buffer);
+    //                System.out.println("Current "+System.currentTimeMillis());
+    //                System.out.println("Received "+timeStamp);
+                    //Gets header
+
+                    short hash = sl.getHash(buffer);
+                    short header = sl.getHeader(buffer);
+                    long delay = System.currentTimeMillis() - timeStamp;
+
+                    String line = header+ "\t" + timeStamp + "\t"+ delay;
+                    fs.writeLine(line);
 
 
                 /*
@@ -112,68 +115,69 @@ public class AudioReceiver implements Runnable {
                 Both cause the array to be played
                  */
                 //Increments the count
-                if(count<16 & header != 3){
-                    if(header>15){
-                        continue;
-                    }
-                    if(set.contains((int) header)){ //Adds to hashmap if the header is already in the set
-                        hashmap.put((int) header, buffer); //Stores in hashmap to be played later
+
+                    if (count < 16 & header != 3) {
+                        //if(count<16){
+                        if (header > 15) {
+                            continue;
+                        }
+                        if (set.contains((int) header)) { //Adds to hashmap if the header is already in the set
+                            hashmap.put((int) header, buffer); //Stores in hashmap to be played later
+                            count++;
+                            continue;
+                        }
+
+                        if (header >= 0 && header < 16) {
+
+                            short newHash = sl.hash(sl.getAudio(buffer)); // checking size to case not max value of short
+                            if (newHash == hash) {
+                                send[header] = buffer; //Adds to the array to be played
+                                set.add((int) header); //Adds to the set
+                            }
+                        }
                         count++;
-                        continue;
-                    }
+                    } else {
+                        byte[][] temp = send;
 
-                    if(header >= 0 && header < 16) {
+                        set.clear(); //Clears the set
+                        count = 0; //Resets the
 
-                        short newHash = sl.hash(sl.getAudio(buffer)); // checking size to case not max value of short
-                        if(newHash == hash){
-                            send[header] = buffer; //Adds to the array to be played
-                            set.add((int) header); //Adds to the set
-                        }
-                    }
-                    count++;
-                }
+                        for (int i = 0; i < 16; i++) { //Plays all the packets in the array
+                            if (send[i] == null) {
+                                if (DS == 0 || DS == 3 || DS == 4) {
+                                    i = comp.compensation(queue, send, blockNum, i, true); // repeating packets
 
-                else{
-                    byte[][] temp = send;
-
-                    set.clear(); //Clears the set
-                    count = 0; //Resets the
-
-                    for(int i=0; i<16; i++){ //Plays all the packets in the array
-                        if (send[i] == null) {
-                            if(DS == 0 || DS == 3 || DS == 4){
-                                i = comp.compensation(queue, send, blockNum, i, true); // repeating packets
+                                } else if (DS == 2) {
+                                    i = comp.compensation(queue, send, blockNum, i, false); // repeating packets
+                                }
 
                             }
-                            else if(DS == 2){
-                                i = comp.compensation(queue, send, blockNum, i, false); // repeating packets
+                            if (send[i] != null) {
+                                i = comp.playAudio(queue, send, blockNum, i, sl); // playing audio
+                                //Checks if the packet is in the hashmap if it is add it to the array
+                                if (hashmap.containsKey(i)) { //If the packet is in the hashmap remove it
+                                    temp[i] = hashmap.get(i);
+                                    set.add((int) sl.getHeader(hashmap.get(i)));
+                                    hashmap.remove(i);
+                                    count++; //Increment the count
+                                } else temp[i] = null;
                             }
-
                         }
-                        if (send[i] != null) {
-                           i = comp.playAudio(queue, send, blockNum, i, sl); // playing audio
-                            //Checks if the packet is in the hashmap if it is add it to the array
-                            if(hashmap.containsKey(i)){ //If the packet is in the hashmap remove it
-                                temp[i] = hashmap.get(i);
-                                set.add((int) sl.getHeader(hashmap.get(i)));
-                                hashmap.remove(i);
-                                count++; //Increment the count
-                            }
-                            else temp[i] = null;
+
+
+                        send = temp;
+                        if (header >= 0 && header < 16) {
+                            set.add((int) header); //Adds the new header to the set
+                            send[header] = buffer; //Adds the new packet to the array
                         }
+
+                        count++;
+                        blockNum++;
+                        System.out.println("block count " + blockNum + "\n");
+
                     }
-
-
-                    send = temp;
-                    if(header >= 0 && header < 16) {
-                        set.add((int) header); //Adds the new header to the set
-                        send[header] = buffer; //Adds the new packet to the array
-                    }
-
-                    count++;
-                    blockNum++;
-                    System.out.println("block count "  + blockNum + "\n");
-
+                }else{
+                    ap.playBlock(sl.getAudio(buffer));
                 }
 
 

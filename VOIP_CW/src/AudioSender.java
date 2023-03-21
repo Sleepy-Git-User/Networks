@@ -104,7 +104,10 @@ public class AudioSender implements Runnable{
                 matrix[count] = buffer;
                 count++;
                 if(count == 16){
+                    /*******************************************************************************/
                     byte[][] sorted = sl.rotateLeft(matrix);
+                    /*******************************************************************************/
+
                     for (int i = 0; i < 16; i++) {
                         short header = sl.getHeader(sorted[i]);
                         sorted[i] = sl.addTime(sorted[i]);
