@@ -60,9 +60,9 @@ class layer {
     short hash(byte[] audio) {
         int sum = 0;
         for (byte b : audio) {
-            sum += b & 0xFF;
+            sum += b & 0xFF; // convert signed byte to unsigned int
         }
-        return (short) (sum % 65535);
+        return (short) (sum % 65535); // max value of short
     }
 
     short getHash(byte[] audio) {
