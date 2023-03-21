@@ -14,6 +14,8 @@ import java.math.BigInteger;
 import java.net.*;
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 public class rsaReceiver implements Runnable{
 
@@ -58,7 +60,6 @@ public class rsaReceiver implements Runnable{
 
                 //Payload will store the public key.
                 byte[] payload = new byte[3000];
-                byte[] smallP = new byte[100];
                 DatagramPacket packet = new DatagramPacket(buffer, 0, buffer.length);
 
                 receiving_socket.receive(packet);
@@ -77,7 +78,7 @@ public class rsaReceiver implements Runnable{
                         bb.get(payload);
                         String str = new String(payload);
                         // This makes a new key object which will store the received keys.
-                        theirKeys = new Keys(new BigInteger("0"), new BigInteger("65537"),new BigInteger(str.substring(2,2999).trim()));
+                        theirKeys = new Keys(new BigInteger("0"), new BigInteger("65537"),new BigInteger(str.substring(2,3000).trim()));
                         haveTheirKeys = true;
                         System.out.println("Got their keys");
                         break;
@@ -85,46 +86,46 @@ public class rsaReceiver implements Runnable{
                         if (!rsaSender.acknowledgement){
                             bb.get(payload); // Gets the payload
                             String EncryptedAcknowledgement = new String(payload); // Converts the payload to string
-                            BigInteger Decrypted = RSAEncryptDecrypt.decrypt(new BigInteger(EncryptedAcknowledgement.substring(2,2999).trim()),rsaSender.Mykeys.getPrivateKey(),rsaSender.Mykeys.getModulus());
+                            BigInteger Decrypted = RSAEncryptDecrypt.decrypt(new BigInteger(EncryptedAcknowledgement.substring(2,3000).trim()),rsaSender.Mykeys.getPrivateKey(),rsaSender.Mykeys.getModulus());
                             System.out.println("Got a message to decrypt");
                             // If the Decypted value is the same as their public key then we know we both have eachothers keys and we can now end the loop and goto the voip system.
                             if (Decrypted.equals(theirKeys.getPublicKey())){
                                 rsaSender.acknowledgement = true;
                                 rsaSender.finished = true;
-                                running = false;
+                                //running = false;
                                 System.out.println("Done I think");
                             }
                         }
                         break;
                     case 2:
                         System.out.println("case 2");
-                        short theirPriority = bb.getShort();
-                        bb.get(smallP);
+                        short theirPriority = bb.getShort(2);
+                        System.out.println("My key:"+  rsaSender.priority + "Their key: "+ theirPriority);
+                        bb.get(payload);
                         String theirKey = new String(payload);
-                        System.out.println(theirKey);
-                        BigInteger Decrypted = RSAEncryptDecrypt.decrypt(new BigInteger(theirKey.substring(0,99).trim()),rsaSender.Mykeys.getPrivateKey(),rsaSender.Mykeys.getModulus());
+                        BigInteger Decrypted = RSAEncryptDecrypt.decrypt(new BigInteger(theirKey.substring(4).trim()),rsaSender.Mykeys.getPrivateKey(),rsaSender.Mykeys.getModulus());
+                        System.out.println("My XorKeyLength "+rsaSender.xorKey.length+" Their XorLnegh:" + Decrypted.toByteArray().length);
                         if (theirPriority > rsaSender.priority) {
                             rsaSender.priority = theirPriority;
                             rsaSender.xorKey = Decrypted.toByteArray();
                         }
                             haveTheirKeys = true;
-                        rsaSender.acknowledgement = true;
-                        rsaSender.haveXor = true;
-                        running = false;
-                        System.out.println("have xor key sroted");
+
+                        //System.out.println("have xor key sorted");
                         break;
                     case 3:
                         System.out.println("header 3 here");
-                        ByteBuffer encryptedTest = ByteBuffer.allocate(2);
-                        int payloadTest = 0;
-                        encryptedTest.putShort(bb.getShort(payloadTest));
-                        byte[] ciphertext = xor.decrypt(payload, rsaSender.xorKey);
+                        byte[] priorP = new byte[526];
+                        bb.get(priorP);
+                        byte[] ciphertext = xor.decrypt(Arrays.copyOfRange(priorP,2,526), rsaSender.xorKey);
                         ByteBuffer priority = ByteBuffer.allocate(2);
                         priority.putShort(rsaSender.priority);
-                        if (ciphertext.equals(priority)) {
-                            System.out.println("we have the same xor key pog");
+                        System.out.println(rsaSender.priority + "  " + ByteBuffer.wrap(ciphertext).getShort());
+                        if (Arrays.equals(Arrays.copyOfRange(ciphertext,0,2),priority.array())) {
+                            //System.out.println("we have the same xor key pog");
                             rsaSender.acknowledgement = true;
                             rsaSender.haveXor = true;
+                            running = false;
                         }
                         break;
                     default:
