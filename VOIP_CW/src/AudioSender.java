@@ -48,7 +48,7 @@ public class AudioSender implements Runnable{
 
         //***************************************************
         //Port to send to
-        int PORT = 55555;
+        int PORT = AudioDuplex.DefinedPort;
         //IP ADDRESS to send to
         InetAddress clientIP = AudioDuplex.DefinedIp;
         //***************************************************
