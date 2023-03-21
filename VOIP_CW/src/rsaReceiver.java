@@ -53,10 +53,10 @@ public class rsaReceiver implements Runnable{
 
             try{
                 //Receive a DatagramPacket of 512 bytes
-                byte[] buffer = new byte[514];
+                byte[] buffer = new byte[800];
 
                 //Payload will store the public key.
-                byte[] payload = new byte[512];
+                byte[] payload = new byte[800];
                 DatagramPacket packet = new DatagramPacket(buffer, 0, buffer.length);
 
                 receiving_socket.receive(packet);
@@ -75,7 +75,7 @@ public class rsaReceiver implements Runnable{
                         bb.get(payload);
                         String str = new String(payload);
                         // This makes a new key object which will store the received keys.
-                        theirKeys = new Keys(new BigInteger("0"), new BigInteger("65537"),new BigInteger(str.substring(2,509).trim()));
+                        theirKeys = new Keys(new BigInteger("0"), new BigInteger("65537"),new BigInteger(str.substring(2,799).trim()));
                         haveTheirKeys = true;
                         System.out.println("Got their keys");
                         break;
@@ -83,7 +83,7 @@ public class rsaReceiver implements Runnable{
                         if (!rsaSender.acknowledgement){
                             bb.get(payload); // Gets the payload
                             String EncryptedAcknowledgement = new String(payload); // Converts the payload to string
-                            BigInteger Decrypted = RSAEncryptDecrypt.decrypt(new BigInteger(EncryptedAcknowledgement.substring(2,509).trim()),rsaSender.Mykeys.getPrivateKey(),rsaSender.Mykeys.getModulus());
+                            BigInteger Decrypted = RSAEncryptDecrypt.decrypt(new BigInteger(EncryptedAcknowledgement.substring(2,799).trim()),rsaSender.Mykeys.getPrivateKey(),rsaSender.Mykeys.getModulus());
                             System.out.println("Got a message to decrypt");
                             // If the Decypted value is the same as their public key then we know we both have eachothers keys and we can now end the loop and goto the voip system.
                             if (Decrypted.equals(theirKeys.getPublicKey())){
@@ -95,7 +95,13 @@ public class rsaReceiver implements Runnable{
                         }
                         break;
                     case 2:
-                        // code to execute if header is 2
+                        short theirPriority = bb.getShort();
+                        bb.get(payload);
+                        String theirKey = new String(payload);
+                        if (theirPriority > rsaSender.priority){
+                            rsaSender.priority = theirPriority;
+                            rsaSender.xorKey = theirKey.substring(2,799).trim());
+                    }
                         break;
                     case 3:
                         // code to execute if header is 3
