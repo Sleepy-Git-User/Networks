@@ -113,7 +113,7 @@ public class AudioReceiver implements Runnable {
                      */
                     //Increments the count
                     if (count < 16 & header != 3) {
-                        //                if(count<16){
+//                    if(count<16){
                         if (header > 15) {
                             continue;
                         }
