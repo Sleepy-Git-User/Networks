@@ -75,6 +75,7 @@ public class AudioReceiver implements Runnable {
         // for testing packet loss/corruption
         int blockNum = 0;
         Queue<byte[]> queue = new LinkedList<>(); // compensation
+        boolean encrypt = true;
 
         while (running){
 
