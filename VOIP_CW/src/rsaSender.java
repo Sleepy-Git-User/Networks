@@ -43,7 +43,7 @@ public class rsaSender implements Runnable{
             // Creates a Bytebuffer and allocates the size to 2 bytes for the short header and then to the size of text.length
 
             if (!acknowledgement){ // Sends our public key with the header 0 to signify this packet holds a public key.
-                ByteBuffer bb = ByteBuffer.allocate(800);
+                ByteBuffer bb = ByteBuffer.allocate(3000);
                 bb.putShort((short)0);
                 bb.put(publicKey);
                 PS.send(bb);
@@ -51,7 +51,7 @@ public class rsaSender implements Runnable{
 
             }
             if (rsaReceiver.haveTheirKeys){
-                ByteBuffer bb = ByteBuffer.allocate(800);
+                ByteBuffer bb = ByteBuffer.allocate(3000);
                 bb.putShort((short) 1);
                 BigInteger Encrypted = RSAEncryptDecrypt.encrypt(Mykeys.getPublicKey(),rsaReceiver.theirKeys.getPublicKey(),rsaReceiver.theirKeys.getModulus());
                 bb.put(String.valueOf(Encrypted).getBytes(StandardCharsets.UTF_8));
@@ -72,23 +72,28 @@ public class rsaSender implements Runnable{
                 // Creates a Bytebuffer and allocates the size to 2 bytes for the short header and then to the size of text.length
 
                 if (!acknowledgement){ // Sends our public key with the header 0 to signify this packet holds a public key.
-                    ByteBuffer bb = ByteBuffer.allocate(600);
+                    ByteBuffer bb = ByteBuffer.allocate(3000);
+                    ByteBuffer xbb = ByteBuffer.allocate(xorKey.length);
+                    xbb.put(xorKey);
                     bb.putShort((short)2);
                     bb.putShort(priority);
-                    bb.put(xorKey);
-                    BigInteger Encrypted = RSAEncryptDecrypt.encrypt(new BigInteger(1,bb.array()),rsaReceiver.theirKeys.getPublicKey(),rsaReceiver.theirKeys.getModulus());
+                    System.out.println(priority);
+                    BigInteger Encrypted = RSAEncryptDecrypt.encrypt(new BigInteger(1,xbb.array()),rsaReceiver.theirKeys.getPublicKey(),rsaReceiver.theirKeys.getModulus());
+                    BigInteger Decrypted = RSAEncryptDecrypt.decrypt(Encrypted,rsaSender.Mykeys.getPrivateKey(),rsaSender.Mykeys.getModulus());
+                    System.out.println(Decrypted);
                     bb.put(String.valueOf(Encrypted).getBytes(StandardCharsets.UTF_8));
+
                     PS.send(bb);
                     System.out.println("sent xor Key and priority number");
                 }
                 if (rsaReceiver.haveTheirKeys){
-                    ByteBuffer bb = ByteBuffer.allocate(522);
+                    ByteBuffer bb = ByteBuffer.allocate(3000);
                     bb.putShort((short) 3);
-                    byte[] bytes = ByteBuffer.allocate(2).putShort(priority).array();
-                    byte[] ciphertext = xor.encrypt(bytes, rsaSender.xorKey);
+                    ByteBuffer priority = ByteBuffer.allocate(2);
+                    byte[] ciphertext = xor.encrypt(priority.array(), rsaSender.xorKey);
                     bb.put(ciphertext);
                     PS.send(bb);
-                    System.out.println("sent encrypted message to test");
+                    System.out.println("sent xor message to test");
                 }
 
             }catch (IOException e) {

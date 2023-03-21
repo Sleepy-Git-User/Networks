@@ -50,14 +50,7 @@ public class AudioSender implements Runnable{
         //Port to send to
         int PORT = 55555;
         //IP ADDRESS to send to
-        InetAddress clientIP = null;
-        try {
-            clientIP = InetAddress.getByName("localhost");
-        } catch (UnknownHostException e) {
-            System.out.println("ERROR: TextSender: Could not find client IP");
-            e.printStackTrace();
-            System.exit(0);
-        }
+        InetAddress clientIP = AudioDuplex.DefinedIp;
         //***************************************************
 
         //***************************************************
