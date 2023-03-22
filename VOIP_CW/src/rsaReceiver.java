@@ -80,20 +80,20 @@ public class rsaReceiver implements Runnable{
                         // This makes a new key object which will store the received keys.
                         theirKeys = new Keys(new BigInteger("0"), new BigInteger("65537"),new BigInteger(str.substring(2,3000).trim()));
                         haveTheirKeys = true;
-                        //System.out.println("Got their keys");
+                        System.out.println("Got their keys");
                         break;
                     case 1:
                         if (!rsaSender.acknowledgement){
                             bb.get(payload); // Gets the payload
                             String EncryptedAcknowledgement = new String(payload); // Converts the payload to string
                             BigInteger Decrypted = RSAEncryptDecrypt.decrypt(new BigInteger(EncryptedAcknowledgement.substring(2,3000).trim()),rsaSender.Mykeys.getPrivateKey(),rsaSender.Mykeys.getModulus());
-                            //System.out.println("Got a message to decrypt");
+                            System.out.println("Got a message to decrypt");
                             // If the Decypted value is the same as their public key then we know we both have eachothers keys and we can now end the loop and goto the voip system.
                             if (Decrypted.equals(theirKeys.getPublicKey())){
                                 rsaSender.acknowledgement = true;
                                 rsaSender.finished = true;
                                 //running = false;
-                                //System.out.println("Done I think");
+                                System.out.println("Done I think");
                             }
                         }
                         break;

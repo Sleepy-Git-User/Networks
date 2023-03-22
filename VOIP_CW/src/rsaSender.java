@@ -64,7 +64,7 @@ public class rsaSender implements Runnable{
                 bb.putShort((short)0);
                 bb.put(publicKey);
                 PS.send(bb);
-                //System.out.println("sent public Key");
+                System.out.println("sent public Key");
 
             }
             if (rsaReceiver.haveTheirKeys){
@@ -73,7 +73,7 @@ public class rsaSender implements Runnable{
                 BigInteger Encrypted = RSAEncryptDecrypt.encrypt(Mykeys.getPublicKey(),rsaReceiver.theirKeys.getPublicKey(),rsaReceiver.theirKeys.getModulus());
                 bb.put(String.valueOf(Encrypted).getBytes(StandardCharsets.UTF_8));
                 PS.send(bb);
-                //System.out.println("sent encrypted message to test");
+                System.out.println("sent encrypted message to test");
             }
                 try {
                     Thread.sleep(1000); // sleep for 1 second
