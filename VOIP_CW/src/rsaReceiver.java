@@ -21,7 +21,7 @@ public class rsaReceiver implements Runnable{
 
    public static Keys theirKeys;
    public static boolean haveTheirKeys = false;
-
+    public static boolean running = true;
     static DatagramSocket receiving_socket;
 
     public Thread thread;
@@ -51,7 +51,7 @@ public class rsaReceiver implements Runnable{
         //***************************************************
 
         //Main loop.
-        boolean running = true;
+
         while (running){
 
             try{
@@ -80,7 +80,7 @@ public class rsaReceiver implements Runnable{
                         // This makes a new key object which will store the received keys.
                         theirKeys = new Keys(new BigInteger("0"), new BigInteger("65537"),new BigInteger(str.substring(2,3000).trim()));
                         haveTheirKeys = true;
-                        System.out.println("Got their keys");
+                        //System.out.println("Got their keys");
                         break;
                     case 1:
                         if (!rsaSender.acknowledgement){
@@ -93,14 +93,14 @@ public class rsaReceiver implements Runnable{
                                 rsaSender.acknowledgement = true;
                                 rsaSender.finished = true;
                                 //running = false;
-                                System.out.println("Done I think");
+                                //System.out.println("Done I think");
                             }
                         }
                         break;
                     case 2:
-                        System.out.println("case 2");
+                        //System.out.println("case 2");
                         short theirPriority = bb.getShort(2);
-                        System.out.println("My key:"+  rsaSender.priority + " Their key: "+ theirPriority);
+                        //System.out.println("My priority:"+  rsaSender.priority + " Their priority: "+ theirPriority);
                         bb.get(payload);
                         String theirKey = new String(payload);
                         BigInteger Decrypted = RSAEncryptDecrypt.decrypt(new BigInteger(theirKey.substring(4).trim()),rsaSender.Mykeys.getPrivateKey(),rsaSender.Mykeys.getModulus());
@@ -120,7 +120,7 @@ public class rsaReceiver implements Runnable{
                         byte[] ciphertext = xor.decrypt(Arrays.copyOfRange(priorP,2,526), rsaSender.xorKey);
                         ByteBuffer priority = ByteBuffer.allocate(2);
                         priority.putShort(rsaSender.priority);
-                        System.out.println(rsaSender.priority + "  " + ByteBuffer.wrap(ciphertext).getShort() + " attempts:" + rsaSender.attempts);
+                        System.out.println("Priority we sent: "+rsaSender.priority + " What we got: " + ByteBuffer.wrap(ciphertext).getShort() + " attempts:" + rsaSender.attempts);
                         if (Arrays.equals(Arrays.copyOfRange(ciphertext,0,2),priority.array())) {
                             //System.out.println("we have the same xor key pog");
                             rsaSender.acknowledgement = true;
@@ -148,7 +148,7 @@ public class rsaReceiver implements Runnable{
                     rsaSender.haveXor = true;
                     running = false;
                     try {
-                        Thread.sleep(4000); // sleep for 1 second
+                        Thread.sleep(7000); // sleep for 1 second
                     } catch (InterruptedException e) {
                         // handle the exception
                     }

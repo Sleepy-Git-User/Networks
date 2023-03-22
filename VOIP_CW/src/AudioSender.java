@@ -11,6 +11,8 @@ import java.net.*;
 import java.io.*;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.zip.CRC32;
 
@@ -45,7 +47,6 @@ public class AudioSender implements Runnable{
         thread.start();
     }
     public void run (){
-
         //***************************************************
         //Port to send to
         int PORT = AudioDuplex.DefinedPort;
