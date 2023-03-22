@@ -4,6 +4,11 @@ import java.util.Queue;
 import java.util.Stack;
 
 public class compensation {
+    int interleave = 9;
+
+    public compensation(int interleave) {
+        this.interleave = interleave;
+    }
 
     int compensation(Queue<byte[]> queue, byte[][] send, int blockNum, int i, boolean comp) {
         Stack<byte[]> tempStack = getStack(queue); // converting queue to stack
@@ -23,7 +28,7 @@ public class compensation {
                 num = addPreviousPackets(send, num, queue, collectedP); // adding previous packets to array and queue
 
                 if (blockNum == 0) { // first empty block
-                    i = 15; // move on
+                    i = interleave-1; // move on
                 } else {
                     i = num - nullCount; // return counter from for loop back to play repeated packets
                 }

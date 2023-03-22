@@ -26,12 +26,35 @@ class sequenceLayer extends layer {
 
     byte[][] rotateLeft(byte[][] audio){
         byte[][] left = new byte[audio.length][];
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                left[4 * (3 - j) + i] = audio[4 * i + j];
-                
+        System.out.println("Audio length: "+audio.length);
+        if(audio.length==4){
+            for (int i = 0; i < 2; i++) {
+                for (int j = 0; j < 2; j++) {
+                    left[2 * (1 - j) + i] = audio[2 * i + j];
+                }
             }
+            return left;
+        }else if(audio.length==9){
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    left[3 * (2 - j) + i] = audio[3 * i + j];
+                }
+            }
+            return left;
+        }else if(audio.length==16){
+            for (int i = 0; i < 4; i++) {
+                for (int j = 0; j < 4; j++) {
+                    left[4 * (3 - j) + i] = audio[4 * i + j];
+                }
+            }
+            return left;
+        }else{
+            for (int i = 0; i < 5; i++) {
+                for (int j = 0; j < 5; j++) {
+                    left[5 * (4 - j) + i] = audio[5 * i + j];
+                }
+            }
+            return left;
         }
-        return left;
     }
 }

@@ -1,53 +1,54 @@
-dataPoints = 112;
+dataPoints = 60;
 
-[senderData] = ReadDataFromFile(".\measurements\sender.txt", dataPoints, 2);
+[senderData] = ReadDataFromFile(".\measurements\sender.txt", dataPoints, 3);
 [receiverData] = ReadDataFromFile(".\measurements\receiver.txt", dataPoints, 3);
 
-instances = linspace(1, 112, 112);
-instances = transpose(instances);
+xAxis = 0:14;
 
-senderHeader = senderData(:,1);
-senderTime = senderData(:,2);
+senderI = senderData(:,1);
+senderHeader = senderData(:,2);
+senderTime = senderData(:,3);
 
-receiverHeader = receiverData(:,1);
-receiverTime = receiverData(:,2);
-timeDifference = receiverData(:,3);
+receiverI = receiverData(:,1);
+receiverHeader = receiverData(:,2);
+receiverTime = receiverData(:,3);
 
-wasPacketReceived = zeros(dataPoints, 1);
+timediff = zeros(1, dataPoints);
+line1 = zeros(1,15);
+line2 = zeros(1,15);
+line3 = zeros(1,15);
+line4 = zeros(1,15);
 
-failCount = 0;
-sum = 0;
 for i = 1:dataPoints
-    if(senderHeader(i) == receiverHeader(i))
-        wasPacketReceived(i) = 1;
-        sum = sum + timeDifference(i);
+    timediff = receiverTime(i) - senderTime(i);
+    q = floor(i / 15);
+    idx = mod(i - 1, 15) + 1; % Use the modulus operator to cycle through the indices of the arrays
+    if q < 1
+        line1(idx) = timediff;
+    elseif q < 2
+        line2(idx) = timediff;
+    elseif q < 3
+        line3(idx) = timediff;
     else
-        wasPacketReceived(i) = 0;
-        timeDifference(i) = -50;
-        failCount = failCount + 1;
+        line4(idx) = timediff;
     end
 end
 
-mean = sum/(dataPoints - failCount);
-
-disp("Mean is: " + mean)
-
-figure
-
 subplot(2, 1, 1) %row, column, position
-plot(instances, wasPacketReceived)
+plot(xAxis, line1, xAxis, line2, xAxis, line3, xAxis, line4) % Plot all four lines in one call to plot
+xlim([0 15]);
+ylim([0 10000]);
 grid on
-title('Graph to show if the packet was received')
-xlabel('Instance')
-ylabel('Packet received?')
+title('Graph to show the difference in delay between using different sizes of interleaving')
+xlabel('Block')
+ylabel('Delay')
+legend('4 packet', '9 packet', '16 packet', '25 packet')
+yticks(0:250:5000) % Set the y-axis tick marks every 250 ms
+yticklabels([compose('%d ms', (0:250:1000)), strcat(num2str((1:10)'), ' s')]) % Set the y-axis tick labels in ms and s
+ylabel('Time') % Add y-axis label
 
-subplot(2, 1, 2)
-plot(instances, timeDifference)
-grid on
-title('Graph to show the time delays')
-xlabel('Instance')
-ylabel('Time Delay (ms)')
 
-disp("Time delays when the packets fail are set to an arbitrary value of -50")
-disp("These instances are not included in the statistics")
+
+
+
 
