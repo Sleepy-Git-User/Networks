@@ -126,6 +126,7 @@ public class rsaReceiver implements Runnable{
                             rsaSender.acknowledgement = true;
                             rsaSender.haveXor = true;
                             running = false;
+                            rsaSender.handShaken = true;
                         }
                         rsaSender.attempts++;
                         //rsaSender.priority = (short) (rsaSender.priority + 1);
@@ -139,6 +140,12 @@ public class rsaReceiver implements Runnable{
                 } catch (InterruptedException e) {
                     // handle the exception
                 }
+                if (rsaSender.attempts >5) {
+                    rsaSender.acknowledgement = true;
+                    rsaSender.haveXor = true;
+                    running = false;
+                }
+
         } catch (IOException e) {
                 e.printStackTrace();
             }

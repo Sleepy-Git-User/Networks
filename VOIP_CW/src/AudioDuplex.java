@@ -23,7 +23,8 @@ public class AudioDuplex {
     static {
         try {
             //DefinedIp = InetAddress.getByName("localhost");
-            DefinedIp = InetAddress.getByName("localhost");
+            DefinedIp = InetAddress.getByName("192.168.1.199"); //laptop ip
+            //DefinedIp = InetAddress.getByName("192.168.1.206"); //desktop ip
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
@@ -31,19 +32,19 @@ public class AudioDuplex {
 
     public static void main (String[] args) throws InterruptedException {
 
+        while (!rsaSender.handShaken) {
+                // Creates the threads for the handshakes
+                rsaSender sender = new rsaSender();
+                rsaReceiver receiver = new rsaReceiver();
 
 
-        // Creates the threads for the handshakes
-        rsaSender sender = new rsaSender();
-        rsaReceiver receiver = new rsaReceiver();
-
-
-        // Starts the threads for the handshakes
-        receiver.start();
-        sender.start();
-        // Will wait till the handshakes are complete before ending the threads processes
-        receiver.thread.join();
-        sender.thread.join();
+                // Starts the threads for the handshakes
+                receiver.start();
+                sender.start();
+                // Will wait till the handshakes are complete before ending the threads processes
+                receiver.thread.join();
+                sender.thread.join();
+        }
         Scanner scanner = new Scanner(System.in);
         System.out.println("Press any key to continue...");
         Thread.sleep(1000); // wait for 5 seconds
