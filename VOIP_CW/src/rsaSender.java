@@ -18,7 +18,6 @@ public class rsaSender implements Runnable{
     public static RSAKeyGenerator keyGen;
     public static Keys Mykeys;
     public static boolean acknowledgement;
-    public static boolean AmImissingThierKey = true;
     public static byte[] xorKey;
     public static short priority;
     public static boolean haveXor;
@@ -33,13 +32,14 @@ public class rsaSender implements Runnable{
     }
 
     public void run (){
-
+        System.out.println("=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=");
+        System.out.println("Starting RSA Key Exchange");
         while (!finished){
             try {
                 packetSender PS = new packetSender(AudioDuplex.DefinedIp,AudioDuplex.DefinedPort);
 
             byte[] publicKey = String.valueOf(Mykeys.getModulus()).getBytes(StandardCharsets.UTF_8);
-                System.out.println(publicKey.length);
+                //System.out.println(publicKey.length);
             // Creates a Bytebuffer and allocates the size to 2 bytes for the short header and then to the size of text.length
 
             if (!acknowledgement){ // Sends our public key with the header 0 to signify this packet holds a public key.
@@ -47,7 +47,7 @@ public class rsaSender implements Runnable{
                 bb.putShort((short)0);
                 bb.put(publicKey);
                 PS.send(bb);
-                System.out.println("sent public Key");
+                //System.out.println("sent public Key");
 
             }
             if (rsaReceiver.haveTheirKeys){
@@ -56,7 +56,7 @@ public class rsaSender implements Runnable{
                 BigInteger Encrypted = RSAEncryptDecrypt.encrypt(Mykeys.getPublicKey(),rsaReceiver.theirKeys.getPublicKey(),rsaReceiver.theirKeys.getModulus());
                 bb.put(String.valueOf(Encrypted).getBytes(StandardCharsets.UTF_8));
                 PS.send(bb);
-                System.out.println("sent encrypted message to test");
+                //System.out.println("sent encrypted message to test");
             }
                 try {
                     Thread.sleep(1000); // sleep for 1 second
@@ -69,6 +69,10 @@ public class rsaSender implements Runnable{
         }
         acknowledgement = false;
         rsaReceiver.haveTheirKeys = false;
+        System.out.println("=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=");
+        System.out.println("Key Exchange Successful :D ");
+        System.out.println("=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=");
+        System.out.println("Starting Xor Key Exchange");
         while (!haveXor){
             try {
                 packetSender PS = new packetSender(AudioDuplex.DefinedIp,AudioDuplex.DefinedPort);
@@ -106,6 +110,9 @@ public class rsaSender implements Runnable{
                 e.printStackTrace();
             }
         }
+        System.out.println("=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=");
+        System.out.println("Xor Keys Successfully exchanged :P");
+        System.out.println("=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=");
 
         //***************************************************
     }

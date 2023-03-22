@@ -10,6 +10,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Random;
+import java.util.Scanner;
 
 /**
  *
@@ -21,6 +22,7 @@ public class AudioDuplex {
 
     static {
         try {
+            //DefinedIp = InetAddress.getByName("localhost");
             DefinedIp = InetAddress.getByName("192.168.1.199");
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -48,6 +50,13 @@ public class AudioDuplex {
         // Will wait till the handshakes are complete before ending the threads processes
         receiver.thread.join();
         sender.thread.join();
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Press any key to continue...");
+        Thread.sleep(1000); // wait for 5 seconds
+        scanner.nextLine(); // wait for user input
+        System.out.println("=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=");
+        System.out.println("Starting Audio Threads...");
+        System.out.println("=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=");
 
         // Once the handshakes are done we spawn the threads of the voip, where we can now encrypt and decrypt data.
         AudioReceiver receiver1 = new AudioReceiver();
