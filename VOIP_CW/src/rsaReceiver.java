@@ -132,6 +132,11 @@ public class rsaReceiver implements Runnable{
                         // code to execute if header is none of the above values
                         break;
                 }
+                try {
+                    Thread.sleep(1000); // sleep for 1 second
+                } catch (InterruptedException e) {
+                    // handle the exception
+                }
         } catch (IOException e) {
                 e.printStackTrace();
             }
