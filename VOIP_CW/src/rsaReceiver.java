@@ -98,9 +98,9 @@ public class rsaReceiver implements Runnable{
                         }
                         break;
                     case 2:
-                        //System.out.println("case 2");
+                        System.out.println("case 2");
                         short theirPriority = bb.getShort(2);
-                        //System.out.println("My key:"+  rsaSender.priority + "Their key: "+ theirPriority);
+                        System.out.println("My key:"+  rsaSender.priority + " Their key: "+ theirPriority);
                         bb.get(payload);
                         String theirKey = new String(payload);
                         BigInteger Decrypted = RSAEncryptDecrypt.decrypt(new BigInteger(theirKey.substring(4).trim()),rsaSender.Mykeys.getPrivateKey(),rsaSender.Mykeys.getModulus());
@@ -120,13 +120,14 @@ public class rsaReceiver implements Runnable{
                         byte[] ciphertext = xor.decrypt(Arrays.copyOfRange(priorP,2,526), rsaSender.xorKey);
                         ByteBuffer priority = ByteBuffer.allocate(2);
                         priority.putShort(rsaSender.priority);
-                        //System.out.println(rsaSender.priority + "  " + ByteBuffer.wrap(ciphertext).getShort());
+                        System.out.println(rsaSender.priority + "  " + ByteBuffer.wrap(ciphertext).getShort());
                         if (Arrays.equals(Arrays.copyOfRange(ciphertext,0,2),priority.array())) {
                             //System.out.println("we have the same xor key pog");
                             rsaSender.acknowledgement = true;
                             rsaSender.haveXor = true;
                             running = false;
                         }
+                        //rsaSender.priority = (short) (rsaSender.priority + 1);
                         break;
                     default:
                         // code to execute if header is none of the above values
