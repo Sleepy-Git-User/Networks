@@ -120,13 +120,14 @@ public class rsaReceiver implements Runnable{
                         byte[] ciphertext = xor.decrypt(Arrays.copyOfRange(priorP,2,526), rsaSender.xorKey);
                         ByteBuffer priority = ByteBuffer.allocate(2);
                         priority.putShort(rsaSender.priority);
-                        System.out.println(rsaSender.priority + "  " + ByteBuffer.wrap(ciphertext).getShort());
+                        System.out.println(rsaSender.priority + "  " + ByteBuffer.wrap(ciphertext).getShort() + " attempts:" + rsaSender.attempts);
                         if (Arrays.equals(Arrays.copyOfRange(ciphertext,0,2),priority.array())) {
                             //System.out.println("we have the same xor key pog");
                             rsaSender.acknowledgement = true;
                             rsaSender.haveXor = true;
                             running = false;
                         }
+                        rsaSender.attempts++;
                         //rsaSender.priority = (short) (rsaSender.priority + 1);
                         break;
                     default:
