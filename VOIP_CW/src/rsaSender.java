@@ -58,7 +58,11 @@ public class rsaSender implements Runnable{
                 PS.send(bb);
                 System.out.println("sent encrypted message to test");
             }
-
+                try {
+                    Thread.sleep(1000); // sleep for 1 second
+                } catch (InterruptedException e) {
+                    // handle the exception
+                }
             }catch (IOException e) {
                 e.printStackTrace();
             }
@@ -91,6 +95,11 @@ public class rsaSender implements Runnable{
                     bb.put(ciphertext);
                     PS.send(bb);
                     //System.out.println("sent xor message to test");
+                }
+                try {
+                    Thread.sleep(1000); // sleep for 1 second
+                } catch (InterruptedException e) {
+                    // handle the exception
                 }
 
             }catch (IOException e) {
