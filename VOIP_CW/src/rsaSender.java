@@ -47,7 +47,6 @@ public class rsaSender implements Runnable{
         acknowledgement = false;
         haveXor = false;
         finished = false;
-        rsaReceiver.haveTheirKeys = false;
 
         System.out.println("=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=");
         System.out.println("Starting RSA Key Exchange");
