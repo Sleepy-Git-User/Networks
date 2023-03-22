@@ -45,6 +45,9 @@ public class AudioDuplex {
                 receiver.thread.join();
                 sender.thread.join();
         }
+        System.out.println("=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=");
+        System.out.println("Xor Keys Successfully exchanged :P");
+        System.out.println("=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=");
         Scanner scanner = new Scanner(System.in);
         System.out.println("Press any key to continue...");
         Thread.sleep(1000); // wait for 5 seconds

@@ -80,7 +80,7 @@ public class rsaReceiver implements Runnable{
                         // This makes a new key object which will store the received keys.
                         theirKeys = new Keys(new BigInteger("0"), new BigInteger("65537"),new BigInteger(str.substring(2,3000).trim()));
                         haveTheirKeys = true;
-                        //System.out.println("Got their keys");
+                        System.out.println("Got their keys");
                         break;
                     case 1:
                         if (!rsaSender.acknowledgement){
@@ -93,7 +93,7 @@ public class rsaReceiver implements Runnable{
                                 rsaSender.acknowledgement = true;
                                 rsaSender.finished = true;
                                 //running = false;
-                                //System.out.println("Done I think");
+                                System.out.println("Done I think");
                             }
                         }
                         break;
@@ -141,9 +141,17 @@ public class rsaReceiver implements Runnable{
                     // handle the exception
                 }
                 if (rsaSender.attempts >5) {
+                    System.out.println("=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=");
+                    System.out.println("Error in Key Exchange, attempting again");
+                    System.out.println("=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=");
                     rsaSender.acknowledgement = true;
                     rsaSender.haveXor = true;
                     running = false;
+                    try {
+                        Thread.sleep(4000); // sleep for 1 second
+                    } catch (InterruptedException e) {
+                        // handle the exception
+                    }
                 }
 
         } catch (IOException e) {
