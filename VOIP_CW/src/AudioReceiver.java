@@ -26,7 +26,7 @@ import javax.sound.sampled.LineUnavailableException;
 
 public class AudioReceiver implements Runnable {
     static int DS = 4;
-    static DatagramSocket receiving_socket;
+    static DatagramSocket2 receiving_socket;
     static AudioPlayer ap;
 
     static {
@@ -52,7 +52,7 @@ public class AudioReceiver implements Runnable {
 
         //DatagramSocket receiving_socket;
         try{
-            receiving_socket = new DatagramSocket(PORT);
+            receiving_socket = new DatagramSocket2(PORT);
         } catch (SocketException e){
             System.out.println("ERROR: TextReceiver: Could not open UDP socket to receive from.");
             e.printStackTrace();
@@ -64,13 +64,13 @@ public class AudioReceiver implements Runnable {
         //Main loop.
 
         boolean running = true;
-        int interleave = 25;
+        int interleave = 9;
         sequenceLayer sl = new sequenceLayer();
         int count = 0; //Count to keep track of the number of packets in the array
         byte[][] send = new byte[interleave][]; //Array play packets
         HashSet<Integer> set = new HashSet<Integer>(); //Set to store the headers to check for duplicates
         HashMap<Integer, byte[]> hashmap = new HashMap<Integer, byte[]>(); //Hashmap to store the packets to be played later
-        fileWriter fs = new fileWriter("receiver.txt");
+        fileWriter fs = new fileWriter("RFEC.txt");
         compensation comp = new compensation(interleave);
 
         // for testing packet loss/corruption
@@ -83,14 +83,14 @@ public class AudioReceiver implements Runnable {
 
             try{
                 //Receive a DatagramPacket (note that the string cant be more than 80 chars)
-                byte[] buffer = new byte[524];
+                byte[] buffer = new byte[1028];
                 //Created a byte array to store the audio minus the 2 bytes for the header.
 
-                DatagramPacket packet = new DatagramPacket(buffer, 0, 524);
+                DatagramPacket packet = new DatagramPacket(buffer, 0, 1028);
 
                 receiving_socket.receive(packet);
-                buffer = sl.removeTime(buffer);
-
+                //buffer = sl.removeTime(buffer);
+                System.out.println("Header: "+ sl.getHeader(buffer));
                 if(decrypt) {
 //                    byte[] ciphertext = xor.decrypt(buffer, rsaSender.xorKey);
 
@@ -180,18 +180,49 @@ public class AudioReceiver implements Runnable {
 
                     }
                 }else{
+                    if(set.contains((int) sl.getHeader(buffer))){
+                        count=interleave+1;
+
+                    }
+                    else {
+                        set.add((int) sl.getHeader(buffer));
+                        send[sl.getHeader(buffer)] = buffer;
+                        count++;
+                    }
                     if (count >= interleave) {
-                        if(block<15) {
-                            fs.writeLine(interleave + "\t" + block + "\t" + +System.currentTimeMillis());
+                        if(block<30) {
+                            fs.writeLine(block + "\t" + sl.getHeader(buffer)+"\t" +System.currentTimeMillis());
                             block++;
                         }
                         for (int i = 0; i < interleave; i++) {
-                            ap.playBlock(sl.getAudio(send[i]));
+
+                            if(send[i] == null){
+                                if(i+1 < interleave && send[i+1] != null) {
+                                    System.out.println("Replaying next :" + (i));
+                                    send[i] = send[i + 1];
+                                    ap.playBlock(sl.getLast(send[i]));
+                                }
+                                else{
+                                    System.out.println("Replaying prev :" + (i));
+                                    ap.playBlock(sl.getAudio(send[i-1]));
+                                }
+                            }else {
+                                System.out.println("Playing :" + (i));
+                                ap.playBlock(sl.getAudio(send[i]));
+                            }
                         }
-                        count = 0;
+
+                        set.clear();
+                        send = new byte[interleave][];
+                        if(count>interleave) {
+                            send[sl.getHeader(buffer)] = buffer;
+                            set.add((int) sl.getHeader(buffer));
+                            count=1;
+                        }else{
+                            count = 0;
+                        }
                     }
-                    send[sl.getHeader(buffer)] = buffer;
-                    count++;
+
 
 
                 }

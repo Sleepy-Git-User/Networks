@@ -6,12 +6,13 @@ import java.util.Arrays;
 class sequenceLayer extends layer {
 
 
-    byte[] add(int hash, int pos, byte[] audio){
+    byte[] add(int hash, int pos, byte[] audio, byte[] last){
         short header;
-        ByteBuffer bb = ByteBuffer.allocate(4+audio.length);
+        ByteBuffer bb = ByteBuffer.allocate(1028);
         bb.putShort((short) hash);
         bb.putShort((short) pos);
         bb.put(audio);
+        bb.put(last);
         return bb.array();
     }
 
@@ -20,13 +21,23 @@ class sequenceLayer extends layer {
         ByteBuffer bb = ByteBuffer.wrap(audio);
         bb.getShort();
         bb.getShort();
-        bb.get(audio2);
+        bb.get(audio2, 0, 512);
         return audio2;
+    }
+
+    byte[] getLast(byte[] audio){
+        byte[] last = new byte[512];
+        ByteBuffer bb = ByteBuffer.wrap(audio);
+        bb.getShort();
+        bb.getShort();
+        bb.position(512);
+        bb.get(last, 0, 512);
+        return last;
     }
 
     byte[][] rotateLeft(byte[][] audio){
         byte[][] left = new byte[audio.length][];
-        System.out.println("Audio length: "+audio.length);
+
         if(audio.length==4){
             for (int i = 0; i < 2; i++) {
                 for (int j = 0; j < 2; j++) {

@@ -7,7 +7,7 @@ public class fileWriter {
         try{
             //this.file = new File("C:\\Users\\JoshF\\Documents\\GitHub\\Networks\\ measurements\\"+filename); Pls dont delete this line edit the one below, I hate this file ty <3
             this.file = new File("C:\\Program Files\\GitHub\\Networks\\measurements\\"+filename);
-            FileWriter fileWriter = new FileWriter(file, true);
+            FileWriter fileWriter = new FileWriter(file, false);
             fileWriter.write("");
             fileWriter.close();
         }catch (IOException e) {

@@ -30,7 +30,7 @@ import javax.sound.sampled.LineUnavailableException;
 
 public class AudioSender implements Runnable{
 
-    static DatagramSocket sending_socket;
+    static DatagramSocket2 sending_socket;
     static AudioRecorder ar;
 
     static {
@@ -60,7 +60,7 @@ public class AudioSender implements Runnable{
 
         //DatagramSocket sending_socket;
         try{
-            sending_socket = new DatagramSocket();
+            sending_socket = new DatagramSocket2();
         } catch (SocketException e){
             System.out.println("ERROR: TextSender: Could not open UDP socket to send from.");
             e.printStackTrace();
@@ -79,51 +79,58 @@ public class AudioSender implements Runnable{
 
         boolean running = true;
         int block = 0;
-        int interleave = 16;
+        int interleave = 9;
         byte[][] matrix = new byte[interleave][];
         int count = 0;
+        byte[] last = new byte[512];
+
 
         sequenceLayer sl = new sequenceLayer();
-        fileWriter fs = new fileWriter("sender.txt");
-
-        try {
-            fs.writeLine(interleave + "\t" + block + "\t"+ System.currentTimeMillis());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        fileWriter fs = new fileWriter("FEC.txt");
+        if(block<15) {
+            try {
+                fs.writeLine(block + "\t"+ 0+"/t"+ System.currentTimeMillis());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            block++;
         }
         while (running){
-            try{
 
+            try{
                 byte[] audio = ar.getBlock();
-//                fs.writeLine("Counts: "+ System.currentTimeMillis()+"\t"+audio);
-                //int hash = Arrays.hashCode(audio);
                 short hash = sl.hash(audio);
-                byte[] buffer = sl.add(hash, count, audio);
+                byte[] buffer = sl.add(hash, count, audio, last);
+
+                last = audio;
 
 
                 matrix[count] = buffer;
-                count++;
-                if(count == interleave){
-                    long time = System.currentTimeMillis();
-                    byte[][] sorted = sl.rotateLeft(matrix);
-//                    byte[][] sorted = matrix;
-//                    fs.writeLine(""+interleave+"\t"+ System.currentTimeMillis()+"\t"+(System.currentTimeMillis()-time));
-                    time = System.currentTimeMillis();
-                    for (int i = 0; i < interleave; i++) {
-                        short header = sl.getHeader(sorted[i]);
-                        sorted[i] = sl.addTime(sorted[i]);
-//                        fs.writeLine(header + "\t"+ sl.getTime(sorted[i]));
-//                        byte[] ciphertext = xor.encrypt(sorted[i], rsaSender.xorKey);
-//                        sorted[i] = ciphertext;
+//                count++;
+//                if(count ==50) {
+//                    count = 0;
+//                }
+//                sending_socket.send(new DatagramPacket(buffer, buffer.length, clientIP, PORT));
 
-                        sending_socket.send(new DatagramPacket(sorted[i], sorted[i].length, clientIP, PORT));
+                if(interleave>0) {
+                    byte[][] sorted;
+                    count++;
+                    if(count >= interleave){
+
+                        sorted = sl.rotateLeft(matrix);
+    //                    byte[][] sorted = matrix;
+    //                    fs.writeLine(""+interleave+"\t"+ System.currentTimeMillis()+"\t"+(System.currentTimeMillis()-time));
+                        for (byte[] bytes : sorted) {
+
+                            sending_socket.send(new DatagramPacket(bytes, bytes.length, clientIP, PORT));
+                            //2 hash 2 header 512 audio 4 int 4 int
+                        }
+                        count = 0;
+                        matrix = new byte[interleave][];
                     }
-                    count = 0;
-                    matrix = new byte[interleave][];
                 }
-
                 if(block<15) {
-                    fs.writeLine(interleave + "\t" + block + "\t"+ System.currentTimeMillis());
+                    fs.writeLine(block + "\t"+ sl.getHeader(buffer) +"/t"+ System.currentTimeMillis());
                     block++;
                 }
 
