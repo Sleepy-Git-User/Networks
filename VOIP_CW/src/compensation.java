@@ -107,6 +107,7 @@ public class compensation {
         //System.out.println("...");
         System.out.println("Receiver " +  i  + ": " + Arrays.toString(send[i]));
         AudioReceiver.ap.playBlock(sl.getAudio(send[i])); // playing audio
+
         if(blockNum>1){ // don't remove elements until at least 1 block played
             queue.remove(); // remove a packet
         }

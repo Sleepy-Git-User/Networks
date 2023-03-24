@@ -22,8 +22,8 @@ public class AudioDuplex {
 
     static {
         try {
-            //DefinedIp = InetAddress.getByName("localhost");
-            DefinedIp = InetAddress.getByName("192.168.1.199"); //laptop ip
+            DefinedIp = InetAddress.getByName("localhost");
+//            DefinedIp = InetAddress.getByName("192.168.1.199"); //laptop ip
             //DefinedIp = InetAddress.getByName("192.168.1.206"); //desktop ip
         } catch (UnknownHostException e) {
             e.printStackTrace();
