@@ -30,7 +30,7 @@ import javax.sound.sampled.LineUnavailableException;
 
 public class AudioSender implements Runnable{
 
-    static DatagramSocket2 sending_socket;
+    static DatagramSocket sending_socket;
     static AudioRecorder ar;
 
     static {
@@ -60,7 +60,7 @@ public class AudioSender implements Runnable{
 
         //DatagramSocket sending_socket;
         try{
-            sending_socket = new DatagramSocket2();
+            sending_socket = new DatagramSocket();
         } catch (SocketException e){
             System.out.println("ERROR: TextSender: Could not open UDP socket to send from.");
             e.printStackTrace();
@@ -86,7 +86,7 @@ public class AudioSender implements Runnable{
 
 
         sequenceLayer sl = new sequenceLayer();
-        fileWriter fs = new fileWriter("FEC.txt");
+        fileWriter fs = new fileWriter("SDS.txt");
         if(block<15) {
             try {
                 fs.writeLine(block + "\t"+ 0+"/t"+ System.currentTimeMillis());
@@ -99,40 +99,48 @@ public class AudioSender implements Runnable{
 
             try{
                 byte[] audio = ar.getBlock();
-                short hash = sl.hash(audio);
-                byte[] buffer = sl.add(hash, count, audio, last);
+                if(sending_socket instanceof DatagramSocket){
+                    System.out.println("Sending audio packet");
+                    sending_socket.send(new DatagramPacket(audio, audio.length, clientIP, PORT));
+                }
+                else {
+                    short hash = sl.hash(audio);
+                    byte[] buffer = sl.add(hash, count, audio);
 
-                last = audio;
+                    last = audio;
 
 
-                matrix[count] = buffer;
+                    matrix[count] = buffer;
 //                count++;
 //                if(count ==50) {
 //                    count = 0;
 //                }
 //                sending_socket.send(new DatagramPacket(buffer, buffer.length, clientIP, PORT));
 
-                if(interleave>0) {
-                    byte[][] sorted;
-                    count++;
-                    if(count >= interleave){
+                    if (interleave > 0) {
+                        byte[][] sorted;
+                        count++;
+                        if (count >= interleave) {
 
-                        sorted = sl.rotateLeft(matrix);
-    //                    byte[][] sorted = matrix;
-    //                    fs.writeLine(""+interleave+"\t"+ System.currentTimeMillis()+"\t"+(System.currentTimeMillis()-time));
-                        for (byte[] bytes : sorted) {
+                            sorted = sl.rotateLeft(matrix);
+                            //                    byte[][] sorted = matrix;
+                            //                    fs.writeLine(""+interleave+"\t"+ System.currentTimeMillis()+"\t"+(System.currentTimeMillis()-time));
+                            for (byte[] bytes : sorted) {
 
-                            sending_socket.send(new DatagramPacket(bytes, bytes.length, clientIP, PORT));
-                            //2 hash 2 header 512 audio 4 int 4 int
+                                sending_socket.send(new DatagramPacket(bytes, bytes.length, clientIP, PORT));
+                                //2 hash 2 header 512 audio 4 int 4 int
+                            }
+                            count = 0;
+                            matrix = new byte[interleave][];
                         }
-                        count = 0;
-                        matrix = new byte[interleave][];
+                    } else {
+                        sending_socket.send(new DatagramPacket(buffer, buffer.length, clientIP, PORT));
                     }
                 }
-                if(block<15) {
-                    fs.writeLine(block + "\t"+ sl.getHeader(buffer) +"/t"+ System.currentTimeMillis());
-                    block++;
-                }
+
+                fs.writeLine(block +"\t"+ System.currentTimeMillis());
+                block++;
+
 
             } catch (IOException e){
                 System.out.println("ERROR: TextSender: Some random IO error occured!");

@@ -26,7 +26,7 @@ import javax.sound.sampled.LineUnavailableException;
 
 public class AudioReceiver implements Runnable {
     static int DS = 4;
-    static DatagramSocket2 receiving_socket;
+    static DatagramSocket receiving_socket;
     static AudioPlayer ap;
 
     static {
@@ -52,7 +52,7 @@ public class AudioReceiver implements Runnable {
 
         //DatagramSocket receiving_socket;
         try{
-            receiving_socket = new DatagramSocket2(PORT);
+            receiving_socket = new DatagramSocket(PORT);
         } catch (SocketException e){
             System.out.println("ERROR: TextReceiver: Could not open UDP socket to receive from.");
             e.printStackTrace();
@@ -70,7 +70,7 @@ public class AudioReceiver implements Runnable {
         byte[][] send = new byte[interleave][]; //Array play packets
         HashSet<Integer> set = new HashSet<Integer>(); //Set to store the headers to check for duplicates
         HashMap<Integer, byte[]> hashmap = new HashMap<Integer, byte[]>(); //Hashmap to store the packets to be played later
-        fileWriter fs = new fileWriter("RFEC.txt");
+        fileWriter fs = new fileWriter("RDS1.txt");
         compensation comp = new compensation(interleave);
 
         // for testing packet loss/corruption
@@ -83,12 +83,16 @@ public class AudioReceiver implements Runnable {
 
             try{
                 //Receive a DatagramPacket (note that the string cant be more than 80 chars)
-                byte[] buffer = new byte[1028];
+                byte[] buffer = new byte[512];
                 //Created a byte array to store the audio minus the 2 bytes for the header.
 
-                DatagramPacket packet = new DatagramPacket(buffer, 0, 1028);
+                DatagramPacket packet = new DatagramPacket(buffer, 0, 512);
 
                 receiving_socket.receive(packet);
+                if(receiving_socket instanceof DatagramSocket){
+                    ap.playBlock(buffer);
+                }
+                else{
                 //buffer = sl.removeTime(buffer);
                 System.out.println("Header: "+ sl.getHeader(buffer));
                 if(decrypt) {
@@ -165,7 +169,7 @@ public class AudioReceiver implements Runnable {
 
 
                         send = temp;
-                        if (header >= 0 && header < interleave-1) {
+                        if (header >= 0 && header < interleave - 1) {
                             short newHash = sl.hash(sl.getAudio(buffer)); // checking size to case not max value of short
                             if (newHash == hash) {
                                 set.add((int) header); //Adds the new header to the set
@@ -179,34 +183,32 @@ public class AudioReceiver implements Runnable {
                         System.out.println("block count " + blockNum + "\n");
 
                     }
-                }else{
-                    if(set.contains((int) sl.getHeader(buffer))){
-                        count=interleave+1;
+                }else {
+                    if (set.contains((int) sl.getHeader(buffer))) {
+                        count = interleave + 1;
 
-                    }
-                    else {
+                    } else {
                         set.add((int) sl.getHeader(buffer));
                         send[sl.getHeader(buffer)] = buffer;
                         count++;
                     }
                     if (count >= interleave) {
-                        if(block<30) {
-                            fs.writeLine(block + "\t" + sl.getHeader(buffer)+"\t" +System.currentTimeMillis());
+                        if (block < 30) {
+                            fs.writeLine(block + "\t" + sl.getHeader(buffer) + "\t" + System.currentTimeMillis());
                             block++;
                         }
                         for (int i = 0; i < interleave; i++) {
 
-                            if(send[i] == null){
-                                if(i+1 < interleave && send[i+1] != null) {
+                            if (send[i] == null) {
+                                if (i + 1 < interleave && send[i + 1] != null) {
                                     System.out.println("Replaying next :" + (i));
                                     send[i] = send[i + 1];
                                     ap.playBlock(sl.getLast(send[i]));
-                                }
-                                else{
+                                } else {
                                     System.out.println("Replaying prev :" + (i));
-                                    ap.playBlock(sl.getAudio(send[i-1]));
+                                    ap.playBlock(sl.getAudio(send[i - 1]));
                                 }
-                            }else {
+                            } else {
                                 System.out.println("Playing :" + (i));
                                 ap.playBlock(sl.getAudio(send[i]));
                             }
@@ -214,18 +216,22 @@ public class AudioReceiver implements Runnable {
 
                         set.clear();
                         send = new byte[interleave][];
-                        if(count>interleave) {
+                        if (count > interleave) {
                             send[sl.getHeader(buffer)] = buffer;
                             set.add((int) sl.getHeader(buffer));
-                            count=1;
-                        }else{
+                            count = 1;
+                        } else {
                             count = 0;
                         }
                     }
+                }
+
 
 
 
                 }
+                fs.writeLine(block + "\t" + System.currentTimeMillis());
+                block++;
 
 
             } catch (IOException e){
