@@ -32,7 +32,7 @@ import javax.sound.sampled.LineUnavailableException;
 
 public class AudioSender implements Runnable{
 
-    static DatagramSocket2 sending_socket;
+    static DatagramSocket sending_socket;
     static AudioRecorder ar;
 
     static {
@@ -61,7 +61,7 @@ public class AudioSender implements Runnable{
 
         //DatagramSocket sending_socket;
         try{
-            sending_socket = new DatagramSocket2();
+            sending_socket = new DatagramSocket();
         } catch (SocketException e){
             System.out.println("ERROR: TextSender: Could not open UDP socket to send from.");
             e.printStackTrace();
@@ -81,18 +81,26 @@ public class AudioSender implements Runnable{
         boolean running = true;
         byte[][] matrix = new byte[16][];
         int count = 0;
+        int block = 0;
 
         sequenceLayer sl = new sequenceLayer();
-        fileWriter fs = new fileWriter("sender.txt");
+        fileWriter fs = new fileWriter("ds1.txt");
 
-
+        try {
+            fs.writeLine(block + "\t"+ System.currentTimeMillis());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         while (running){
             try{
 
                 byte[] audio = ar.getBlock();
+
                 //int hash = Arrays.hashCode(audio);
                 short hash = sl.hash(audio);
                 byte[] buffer = sl.add(hash, count, audio);
+                short header = sl.getHeader(buffer);
+
 
 
                 matrix[count] = buffer;
@@ -104,12 +112,6 @@ public class AudioSender implements Runnable{
 
 
                     for (int i = 0; i < 16; i++) {
-                        short header = sl.getHeader(sorted[i]);
-                        sorted[i] = sl.addTime(sorted[i]);
-                        fs.writeLine(header + "\t"+ sl.getTime(sorted[i]));
-                        byte[] ciphertext = xor.encrypt(sorted[i], rsaSender.xorKey);
-                        sorted[i] = ciphertext;
-
                         sending_socket.send(new DatagramPacket(sorted[i], sorted[i].length, clientIP, PORT));
                     }
                     count = 0;
@@ -117,6 +119,8 @@ public class AudioSender implements Runnable{
                     matrix = new byte[16][];
 
                 }
+                block++;
+                fs.writeLine(block + "\t"+ System.currentTimeMillis());
 
             } catch (IOException e){
                 System.out.println("ERROR: TextSender: Some random IO error occured!");
