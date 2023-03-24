@@ -25,8 +25,8 @@ import uk.ac.uea.cmp.voip.DatagramSocket4;
 import javax.sound.sampled.LineUnavailableException;
 
 public class AudioReceiver implements Runnable {
-    static int DS = 4;
-    static DatagramSocket receiving_socket;
+    static int DS = 2;
+    static DatagramSocket2 receiving_socket;
     static AudioPlayer ap;
 
     static {
@@ -52,7 +52,7 @@ public class AudioReceiver implements Runnable {
 
         //DatagramSocket receiving_socket;
         try{
-            receiving_socket = new DatagramSocket(PORT);
+            receiving_socket = new DatagramSocket2(PORT);
         } catch (SocketException e){
             System.out.println("ERROR: TextReceiver: Could not open UDP socket to receive from.");
             e.printStackTrace();
@@ -76,66 +76,35 @@ public class AudioReceiver implements Runnable {
         // for testing packet loss/corruption
         int blockNum = 0;
         Queue<byte[]> queue = new LinkedList<>(); // compensation
-        boolean decrypt = false;
-        int block = 0;
         while (running){
-
-
             try{
                 //Receive a DatagramPacket (note that the string cant be more than 80 chars)
-                byte[] buffer = new byte[512];
+                byte[] buffer = new byte[514];
                 //Created a byte array to store the audio minus the 2 bytes for the header.
 
-                DatagramPacket packet = new DatagramPacket(buffer, 0, 512);
+                DatagramPacket packet = new DatagramPacket(buffer, 0, 514);
 
                 receiving_socket.receive(packet);
-                if(receiving_socket instanceof DatagramSocket){
-                    ap.playBlock(buffer);
-                }
-                else{
-                //buffer = sl.removeTime(buffer);
-                System.out.println("Header: "+ sl.getHeader(buffer));
-                if(decrypt) {
-//                    byte[] ciphertext = xor.decrypt(buffer, rsaSender.xorKey);
+                    //buffer = sl.removeTime(buffer);
 
-//                    buffer = ciphertext;
-
-                    long timeStamp = sl.getTime(buffer);
-//                    buffer = sl.removeTime(buffer);
-                    //                System.out.println("Current "+System.currentTimeMillis());
-                    //                System.out.println("Received "+timeStamp);
-                    //Gets header
-
-                    short hash = sl.getHash(buffer);
-                    short header = sl.getHeader(buffer);
-                    long delay = System.currentTimeMillis() - timeStamp;
-                    String line = header + "\t" + timeStamp + "\t" + delay;
-                    fs.writeLine(line);
-
-
+                short header = sl.getHeader(buffer);
                     /*
                     If the header is 3 it signifies the start of a new packet
                     and if the count is more than 15 it signifies that the array is full
                     Both cause the array to be played
                      */
                     //Increments the count
-                    if (count < interleave & header != 3) {
+                    if (count < interleave & header != 2) {
 //                    if(count<16){
-                        if (header > 3) {
-                            continue;
-                        }
                         if (set.contains((int) header)) { //Adds to hashmap if the header is already in the set
                             hashmap.put((int) header, buffer); //Stores in hashmap to be played later
                             count++;
                             continue;
                         }
 
-                        if (header >= 0 && header < interleave-1) {
-                            short newHash = sl.hash(sl.getAudio(buffer)); // checking size to case not max value of short
-                            if (newHash == hash) {
-                                send[header] = buffer; //Adds to the array to be played
-                                set.add((int) header); //Adds to the set
-                            }
+                        if (header >= 0 && header < interleave - 1) {
+                            send[header] = buffer; //Adds to the array to be played
+                            set.add((int) header); //Adds to the set
                         }
                         count++;
                     } else {
@@ -146,15 +115,11 @@ public class AudioReceiver implements Runnable {
 
                         for (int i = 0; i < interleave; i++) { //Plays all the packets in the array
                             if (send[i] == null) {
-                                if (DS == 1 || DS == 3 || DS == 4) { // datagramsocket1/3/4
-                                    i = comp.compensation(queue, send, blockNum, i, true); // repeating packets
-
-                                } else if (DS == 2) { // datagramsocket2
-                                    i = comp.compensation(queue, send, blockNum, i, false); // repeating packets
-                                }
-
+                                  // datagramsocket2
+                                i = comp.compensation(queue, send, blockNum, i, false); // repeating packets
                             }
                             if (send[i] != null) {
+                                header = sl.getHeader(send[i]);
                                 i = comp.playAudio(queue, send, blockNum, i, sl); // playing audio
 
                                 //Checks if the packet is in the hashmap if it is add it to the array
@@ -170,68 +135,15 @@ public class AudioReceiver implements Runnable {
 
                         send = temp;
                         if (header >= 0 && header < interleave - 1) {
-                            short newHash = sl.hash(sl.getAudio(buffer)); // checking size to case not max value of short
-                            if (newHash == hash) {
+                            // checking size to case not max value of short
                                 set.add((int) header); //Adds the new header to the set
                                 send[header] = buffer; //Adds the new packet to the array
-                            }
-
                         }
-
                         count++;
                         blockNum++;
                         System.out.println("block count " + blockNum + "\n");
-
+                        fs.writeLine(blockNum + "\t" + System.currentTimeMillis());
                     }
-                }else {
-                    if (set.contains((int) sl.getHeader(buffer))) {
-                        count = interleave + 1;
-
-                    } else {
-                        set.add((int) sl.getHeader(buffer));
-                        send[sl.getHeader(buffer)] = buffer;
-                        count++;
-                    }
-                    if (count >= interleave) {
-                        if (block < 30) {
-                            fs.writeLine(block + "\t" + sl.getHeader(buffer) + "\t" + System.currentTimeMillis());
-                            block++;
-                        }
-                        for (int i = 0; i < interleave; i++) {
-
-                            if (send[i] == null) {
-                                if (i + 1 < interleave && send[i + 1] != null) {
-                                    System.out.println("Replaying next :" + (i));
-                                    send[i] = send[i + 1];
-                                    ap.playBlock(sl.getLast(send[i]));
-                                } else {
-                                    System.out.println("Replaying prev :" + (i));
-                                    ap.playBlock(sl.getAudio(send[i - 1]));
-                                }
-                            } else {
-                                System.out.println("Playing :" + (i));
-                                ap.playBlock(sl.getAudio(send[i]));
-                            }
-                        }
-
-                        set.clear();
-                        send = new byte[interleave][];
-                        if (count > interleave) {
-                            send[sl.getHeader(buffer)] = buffer;
-                            set.add((int) sl.getHeader(buffer));
-                            count = 1;
-                        } else {
-                            count = 0;
-                        }
-                    }
-                }
-
-
-
-
-                }
-                fs.writeLine(block + "\t" + System.currentTimeMillis());
-                block++;
 
 
             } catch (IOException e){

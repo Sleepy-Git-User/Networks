@@ -4,7 +4,7 @@ import java.util.Queue;
 import java.util.Stack;
 
 public class compensation {
-    int interleave = 9;
+    int interleave;
 
     public compensation(int interleave) {
         this.interleave = interleave;
@@ -28,30 +28,12 @@ public class compensation {
                 num = addPreviousPackets(send, num, queue, collectedP); // adding previous packets to array and queue
 
                 if (blockNum == 0) { // first empty block
-                    i = interleave-1; // move on
+                    i = this.interleave-1; // move on
                 } else {
                     i = num - nullCount; // return counter from for loop back to play repeated packets
                 }
             }
         }
-        if(comp){ // compensation for datagramsocket3
-            if(nullCount > 3) { // so only repeat for less than 3 packet loss
-                i = num; // move to next packet
-            }
-            else { // repeat previous packets
-                byte[][] collectedP = getPreviousPackets(tempStack, send, i, nullCount, blockNum); // collecting previous packets
-                num = i; // start from when packet is lost
-
-                num = addPreviousPackets(send, num, queue, collectedP); // adding previous packets to array and queue
-
-                if (blockNum == 0) { // first empty block
-                    i = 15;
-                } else {
-                    i = num - nullCount; // return counter from for loop back to play repeated packets
-                }
-            }
-        }
-
         return i; // returning position to play from
     }
 
@@ -94,11 +76,11 @@ public class compensation {
         int[] count = new int[2]; // for returning
         int num = i; // storing position
         int nullCount = 0; // number of packets lost
-        while (send[num] == null && num < 15) { // looping until next packet isn't null
+        while (send[num] == null && num < 8) { // looping until next packet isn't null
             nullCount++;
             num++;
         }
-        if (num == 15) { // final packet loss
+        if (num == 8) { // final packet loss
             nullCount++;
         }
         // returning

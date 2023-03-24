@@ -82,60 +82,36 @@ public class AudioSender implements Runnable{
         int interleave = 9;
         byte[][] matrix = new byte[interleave][];
         int count = 0;
-        byte[] last = new byte[512];
 
 
         sequenceLayer sl = new sequenceLayer();
         fileWriter fs = new fileWriter("SDS.txt");
-        if(block<15) {
-            try {
-                fs.writeLine(block + "\t"+ 0+"/t"+ System.currentTimeMillis());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            block++;
+
+        try {
+            fs.writeLine(block + "\t"+ System.currentTimeMillis());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
         while (running){
-
             try{
                 byte[] audio = ar.getBlock();
-
-                    short hash = sl.hash(audio);
-                    byte[] buffer = sl.add(hash, count, audio);
-
-                    last = audio;
-
-
+                    byte[] buffer = sl.add(count, audio);
                     matrix[count] = buffer;
-//                count++;
-//                if(count ==50) {
-//                    count = 0;
-//                }
-//                sending_socket.send(new DatagramPacket(buffer, buffer.length, clientIP, PORT));
 
-                    if (interleave > 0) {
-                        byte[][] sorted;
-                        count++;
-                        if (count >= interleave) {
+                    byte[][] sorted;
+                    count++;
+                    if (count >= interleave) {
+                        sorted = sl.rotateLeft(matrix);
+                        for (byte[] bytes : sorted) {
 
-                            sorted = sl.rotateLeft(matrix);
-                            //                    byte[][] sorted = matrix;
-                            //                    fs.writeLine(""+interleave+"\t"+ System.currentTimeMillis()+"\t"+(System.currentTimeMillis()-time));
-                            for (byte[] bytes : sorted) {
-
-                                sending_socket.send(new DatagramPacket(bytes, bytes.length, clientIP, PORT));
-                                //2 hash 2 header 512 audio 4 int 4 int
-                            }
-                            count = 0;
-                            matrix = new byte[interleave][];
+                            sending_socket.send(new DatagramPacket(bytes, bytes.length, clientIP, PORT));
+                            //2 hash 2 header 512 audio 4 int 4 int
                         }
-                    } else {
-                        sending_socket.send(new DatagramPacket(buffer, buffer.length, clientIP, PORT));
+                        count = 0;
+                        matrix = new byte[interleave][];
+                        fs.writeLine(block + "\t"+ System.currentTimeMillis());
+                        block++;
                     }
-
-
-                fs.writeLine(block +"\t"+ System.currentTimeMillis());
-                block++;
 
 
             } catch (IOException e){
