@@ -146,6 +146,7 @@ public class rsaReceiver implements Runnable{
                     System.out.println("=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=");
                     rsaSender.acknowledgement = true;
                     rsaSender.haveXor = true;
+                    rsaSender.finished = true;
                     running = false;
                     try {
                         Thread.sleep(7000); // sleep for 1 second
