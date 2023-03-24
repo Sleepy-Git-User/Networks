@@ -32,7 +32,7 @@ import javax.sound.sampled.LineUnavailableException;
 
 public class AudioSender implements Runnable{
 
-    static DatagramSocket sending_socket;
+    static DatagramSocket2 sending_socket;
     static AudioRecorder ar;
 
     static {
@@ -83,19 +83,16 @@ public class AudioSender implements Runnable{
         int count = 0;
 
         sequenceLayer sl = new sequenceLayer();
-        fileWriter fs = new fileWriter("Sold1.txt");
+        fileWriter fs = new fileWriter("sender.txt");
 
 
         while (running){
             try{
 
                 byte[] audio = ar.getBlock();
-
                 //int hash = Arrays.hashCode(audio);
                 short hash = sl.hash(audio);
                 byte[] buffer = sl.add(hash, count, audio);
-                short header = sl.getHeader(buffer);
-                fs.writeLine(header + "\t"+ System.currentTimeMillis());
 
 
                 matrix[count] = buffer;
@@ -107,6 +104,9 @@ public class AudioSender implements Runnable{
 
 
                     for (int i = 0; i < 16; i++) {
+                        short header = sl.getHeader(sorted[i]);
+                        sorted[i] = sl.addTime(sorted[i]);
+                        fs.writeLine(header + "\t"+ sl.getTime(sorted[i]));
                         byte[] ciphertext = xor.encrypt(sorted[i], rsaSender.xorKey);
                         sorted[i] = ciphertext;
 

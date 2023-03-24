@@ -25,8 +25,8 @@ import uk.ac.uea.cmp.voip.DatagramSocket4;
 import javax.sound.sampled.LineUnavailableException;
 
 public class AudioReceiver implements Runnable {
-    static int DS = 1;
-    static DatagramSocket receiving_socket;
+    static int DS = 4;
+    static DatagramSocket4 receiving_socket;
     static AudioPlayer ap;
 
     static {
@@ -52,7 +52,7 @@ public class AudioReceiver implements Runnable {
 
         //DatagramSocket receiving_socket;
         try{
-            receiving_socket = new DatagramSocket(PORT);
+            receiving_socket = new DatagramSocket4(PORT);
         } catch (SocketException e){
             System.out.println("ERROR: TextReceiver: Could not open UDP socket to receive from.");
             e.printStackTrace();
@@ -69,7 +69,7 @@ public class AudioReceiver implements Runnable {
         byte[][] send = new byte[16][]; //Array play packets
         HashSet<Integer> set = new HashSet<Integer>(); //Set to store the headers to check for duplicates
         HashMap<Integer, byte[]> hashmap = new HashMap<Integer, byte[]>(); //Hashmap to store the packets to be played later
-        fileWriter fs = new fileWriter("Rold1.txt");
+        fileWriter fs = new fileWriter("receiver.txt");
         compensation comp = new compensation();
 
         // for testing packet loss/corruption
@@ -87,20 +87,23 @@ public class AudioReceiver implements Runnable {
                 DatagramPacket packet = new DatagramPacket(buffer, 0, 524);
 
                 receiving_socket.receive(packet);
-                System.out.println("Received packet");
 
                 if(decrypt) {
                     byte[] ciphertext = xor.decrypt(buffer, rsaSender.xorKey);
 
                     buffer = ciphertext;
+
+                    long timeStamp = sl.getTime(buffer);
+                    buffer = sl.removeTime(buffer);
                     //                System.out.println("Current "+System.currentTimeMillis());
                     //                System.out.println("Received "+timeStamp);
                     //Gets header
 
                     short hash = sl.getHash(buffer);
                     short header = sl.getHeader(buffer);
-                    System.out.println("Header: " + header);
-
+                    long delay = System.currentTimeMillis() - timeStamp;
+                    String line = header + "\t" + timeStamp + "\t" + delay;
+                    fs.writeLine(line);
 
 
                     /*
@@ -145,7 +148,6 @@ public class AudioReceiver implements Runnable {
 
                             }
                             if (send[i] != null) {
-                                fs.writeLine(sl.getHeader(send[i]) +"\t"+System.currentTimeMillis());
                                 i = comp.playAudio(queue, send, blockNum, i, sl); // playing audio
 
                                 //Checks if the packet is in the hashmap if it is add it to the array
