@@ -86,7 +86,7 @@ public class AudioSender implements Runnable{
 
 
         sequenceLayer sl = new sequenceLayer();
-        fileWriter fs = new fileWriter("SDS.txt");
+        fileWriter fs = new fileWriter("DS1.txt");
         if(block<15) {
             try {
                 fs.writeLine(block + "\t"+ 0+"/t"+ System.currentTimeMillis());
@@ -138,8 +138,9 @@ public class AudioSender implements Runnable{
                     }
                 }
 
-                fs.writeLine(block +"\t"+ System.currentTimeMillis());
                 block++;
+                fs.writeLine(block +"\t"+ System.currentTimeMillis());
+
 
 
             } catch (IOException e){
