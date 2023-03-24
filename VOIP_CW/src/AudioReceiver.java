@@ -25,8 +25,8 @@ import uk.ac.uea.cmp.voip.DatagramSocket4;
 import javax.sound.sampled.LineUnavailableException;
 
 public class AudioReceiver implements Runnable {
-    static int DS = 2;
-    static DatagramSocket receiving_socket;
+    static int DS = 3;
+    static DatagramSocket3 receiving_socket;
     static AudioPlayer ap;
 
     static {
@@ -52,7 +52,7 @@ public class AudioReceiver implements Runnable {
 
         //DatagramSocket receiving_socket;
         try{
-            receiving_socket = new DatagramSocket(PORT);
+            receiving_socket = new DatagramSocket3(PORT);
         } catch (SocketException e){
             System.out.println("ERROR: TextReceiver: Could not open UDP socket to receive from.");
             e.printStackTrace();
@@ -69,7 +69,7 @@ public class AudioReceiver implements Runnable {
         byte[][] send = new byte[16][]; //Array play packets
         HashSet<Integer> set = new HashSet<Integer>(); //Set to store the headers to check for duplicates
         HashMap<Integer, byte[]> hashmap = new HashMap<Integer, byte[]>(); //Hashmap to store the packets to be played later
-        fileWriter fs = new fileWriter("ds1r.txt");
+        fileWriter fs = new fileWriter("ds3r.txt");
         compensation comp = new compensation();
 
         // for testing packet loss/corruption
