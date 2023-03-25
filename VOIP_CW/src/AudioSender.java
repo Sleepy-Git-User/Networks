@@ -30,7 +30,7 @@ import javax.sound.sampled.LineUnavailableException;
 
 public class AudioSender implements Runnable{
 
-    static DatagramSocket sending_socket;
+    static DatagramSocket4 sending_socket;
     static AudioRecorder ar;
 
     static {
@@ -60,7 +60,7 @@ public class AudioSender implements Runnable{
 
         //DatagramSocket sending_socket;
         try{
-            sending_socket = new DatagramSocket();
+            sending_socket = new DatagramSocket4();
         } catch (SocketException e){
             System.out.println("ERROR: TextSender: Could not open UDP socket to send from.");
             e.printStackTrace();
@@ -79,20 +79,15 @@ public class AudioSender implements Runnable{
 
         boolean running = true;
         int block = 0;
-        int interleave = 9;
+        int interleave = 0;
         byte[][] matrix = new byte[interleave][];
         int count = 0;
-        byte[] last = new byte[512];
+
 
 
         sequenceLayer sl = new sequenceLayer();
-        fileWriter fs = new fileWriter("SDS.txt");
+        fileWriter fs = new fileWriter("SDS4.txt");
         if(block<15) {
-            try {
-                fs.writeLine(block + "\t"+ 0+"/t"+ System.currentTimeMillis());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
             block++;
         }
         while (running){
@@ -100,16 +95,14 @@ public class AudioSender implements Runnable{
             try{
                 byte[] audio = ar.getBlock();
                 if(sending_socket instanceof DatagramSocket){
-                    System.out.println("Sending audio packet");
-                    sending_socket.send(new DatagramPacket(audio, audio.length, clientIP, PORT));
+                    short hash = sl.hash(audio);
+                    byte[] buffer = sl.add(hash, 0, audio);
+                    fs.writeLine(sl.getHeader(buffer) + "\t" + System.currentTimeMillis());
+                    sending_socket.send(new DatagramPacket(buffer, buffer.length, clientIP, PORT));
                 }
                 else {
                     short hash = sl.hash(audio);
-                    byte[] buffer = sl.add(hash, count, audio);
-
-                    last = audio;
-
-
+                    byte[] buffer = sl.add(hash, 0, audio);
                     matrix[count] = buffer;
 //                count++;
 //                if(count ==50) {
@@ -134,12 +127,11 @@ public class AudioSender implements Runnable{
                             matrix = new byte[interleave][];
                         }
                     } else {
+
                         sending_socket.send(new DatagramPacket(buffer, buffer.length, clientIP, PORT));
                     }
                 }
 
-                fs.writeLine(block +"\t"+ System.currentTimeMillis());
-                block++;
 
 
             } catch (IOException e){

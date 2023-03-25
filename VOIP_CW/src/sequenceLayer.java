@@ -14,12 +14,6 @@ class sequenceLayer extends layer {
         bb.put(audio);
         return bb.array();
     }
-    byte[] addLast(byte[] audio, byte[] last){
-        ByteBuffer bb = ByteBuffer.allocate(1028);
-        bb.put(audio);
-        bb.put(last);
-        return bb.array();
-    }
 
     byte[] getAudio(byte[] audio){
         byte[] audio2 = new byte[audio.length-4];
@@ -30,15 +24,6 @@ class sequenceLayer extends layer {
         return audio2;
     }
 
-    byte[] getLast(byte[] audio){
-        byte[] last = new byte[512];
-        ByteBuffer bb = ByteBuffer.wrap(audio);
-        bb.getShort();
-        bb.getShort();
-        bb.position(512);
-        bb.get(last, 0, 512);
-        return last;
-    }
 
     byte[][] rotateLeft(byte[][] audio){
         byte[][] left = new byte[audio.length][];
