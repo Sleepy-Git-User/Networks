@@ -5,9 +5,11 @@ import java.util.Stack;
 
 public class compensation {
     int interleave;
+    fileWriter fs;
 
     public compensation(int interleave) {
         this.interleave = interleave;
+        this.fs = new fileWriter("RDS2.txt");
     }
 
     int compensation(Queue<byte[]> queue, byte[][] send, int blockNum, int i, boolean comp) {
@@ -93,6 +95,8 @@ public class compensation {
         queue.add(send[i]); // adding audio played to queue to be able to repeat
         //System.out.println("...");
         System.out.println("Receiver " +  i  + ": " + Arrays.toString(send[i]));
+        fs.writeLine(sl.getHeader(send[i]) + "\t" + System.currentTimeMillis());
+
         AudioReceiver.ap.playBlock(sl.getAudio(send[i])); // playing audio
         if(blockNum>1){ // don't remove elements until at least 1 block played
             queue.remove(); // remove a packet

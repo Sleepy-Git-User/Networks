@@ -85,33 +85,29 @@ public class AudioSender implements Runnable{
 
 
         sequenceLayer sl = new sequenceLayer();
-        fileWriter fs = new fileWriter("SDS.txt");
+        fileWriter fs = new fileWriter("SDS2.txt");
 
-        try {
-            fs.writeLine(block + "\t"+ System.currentTimeMillis());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
         while (running){
             try{
                 byte[] audio = ar.getBlock();
-                    byte[] buffer = sl.add(count, audio);
-                    matrix[count] = buffer;
 
-                    byte[][] sorted;
-                    count++;
-                    if (count >= interleave) {
-                        sorted = sl.rotateLeft(matrix);
-                        for (byte[] bytes : sorted) {
+                byte[] buffer = sl.add(count, audio);
+                matrix[count] = buffer;
+                fs.writeLine(sl.getHeader(buffer) + "\t"+ System.currentTimeMillis());
+                byte[][] sorted;
+                count++;
+                if (count >= interleave) {
+                    sorted = sl.rotateLeft(matrix);
+                    for (byte[] bytes : sorted) {
 
-                            sending_socket.send(new DatagramPacket(bytes, bytes.length, clientIP, PORT));
-                            //2 hash 2 header 512 audio 4 int 4 int
-                        }
-                        count = 0;
-                        matrix = new byte[interleave][];
-                        fs.writeLine(block + "\t"+ System.currentTimeMillis());
-                        block++;
+                        sending_socket.send(new DatagramPacket(bytes, bytes.length, clientIP, PORT));
+                        //2 hash 2 header 512 audio 4 int 4 int
                     }
+                    count = 0;
+                    matrix = new byte[interleave][];
+
+                    block++;
+                }
 
 
             } catch (IOException e){

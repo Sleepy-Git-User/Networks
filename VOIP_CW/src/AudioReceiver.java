@@ -70,7 +70,7 @@ public class AudioReceiver implements Runnable {
         byte[][] send = new byte[interleave][]; //Array play packets
         HashSet<Integer> set = new HashSet<Integer>(); //Set to store the headers to check for duplicates
         HashMap<Integer, byte[]> hashmap = new HashMap<Integer, byte[]>(); //Hashmap to store the packets to be played later
-        fileWriter fs = new fileWriter("RDS1.txt");
+
         compensation comp = new compensation(interleave);
 
         // for testing packet loss/corruption
@@ -96,13 +96,14 @@ public class AudioReceiver implements Runnable {
                     //Increments the count
                     if (count < interleave & header != 2) {
 //                    if(count<16){
+                        if(header > interleave-1) continue;
                         if (set.contains((int) header)) { //Adds to hashmap if the header is already in the set
                             hashmap.put((int) header, buffer); //Stores in hashmap to be played later
                             count++;
                             continue;
                         }
 
-                        if (header >= 0 && header < interleave - 1) {
+                        if (header >= 0 && header < interleave) {
                             send[header] = buffer; //Adds to the array to be played
                             set.add((int) header); //Adds to the set
                         }
@@ -134,15 +135,16 @@ public class AudioReceiver implements Runnable {
 
 
                         send = temp;
-                        if (header >= 0 && header < interleave - 1) {
+                        if (header >= 0 && header < interleave) {
                             // checking size to case not max value of short
                                 set.add((int) header); //Adds the new header to the set
                                 send[header] = buffer; //Adds the new packet to the array
                         }
                         count++;
+
                         blockNum++;
                         System.out.println("block count " + blockNum + "\n");
-                        fs.writeLine(blockNum + "\t" + System.currentTimeMillis());
+
                     }
 
 
