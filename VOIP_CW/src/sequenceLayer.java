@@ -6,19 +6,18 @@ import java.util.Arrays;
 class sequenceLayer extends layer {
 
 
-    byte[] add(int hash, int pos, byte[] audio){
+    byte[] add(int pos, byte[] audio){
         short header;
         ByteBuffer bb = ByteBuffer.allocate(516);
-        bb.putShort((short) hash);
+
         bb.putShort((short) pos);
         bb.put(audio);
         return bb.array();
     }
 
     byte[] getAudio(byte[] audio){
-        byte[] audio2 = new byte[audio.length-4];
+        byte[] audio2 = new byte[audio.length-2];
         ByteBuffer bb = ByteBuffer.wrap(audio);
-        bb.getShort();
         bb.getShort();
         bb.get(audio2, 0, 512);
         return audio2;

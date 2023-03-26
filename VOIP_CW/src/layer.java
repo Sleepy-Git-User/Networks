@@ -38,7 +38,6 @@ class layer {
 
     short getHeader(byte[] audio) {
         ByteBuffer bb = ByteBuffer.wrap(audio);
-        bb.getShort();
         return bb.getShort();
     }
 
