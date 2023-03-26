@@ -32,7 +32,7 @@ import javax.sound.sampled.LineUnavailableException;
 
 public class AudioSender implements Runnable{
 
-    static DatagramSocket4 sending_socket;
+    static DatagramSocket3 sending_socket;
     static AudioRecorder ar;
 
     static {
@@ -61,7 +61,7 @@ public class AudioSender implements Runnable{
 
         //DatagramSocket sending_socket;
         try{
-            sending_socket = new DatagramSocket4();
+            sending_socket = new DatagramSocket3();
         } catch (SocketException e){
             System.out.println("ERROR: TextSender: Could not open UDP socket to send from.");
             e.printStackTrace();
@@ -84,7 +84,7 @@ public class AudioSender implements Runnable{
         int block = 0;
 
         sequenceLayer sl = new sequenceLayer();
-        fileWriter fs = new fileWriter("ds4.txt");
+        fileWriter fs = new fileWriter("ds3.txt");
 
         while (running){
             try{
@@ -95,7 +95,7 @@ public class AudioSender implements Runnable{
                 short hash = sl.hash(audio);
                 byte[] buffer = sl.add(hash, count, audio);
                 short header = sl.getHeader(buffer);
-                fs.writeLine(0 + "\t"+ System.currentTimeMillis());
+                fs.writeLine(header + "\t"+ System.currentTimeMillis());
 
 
 
